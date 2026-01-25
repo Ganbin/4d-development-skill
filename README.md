@@ -61,7 +61,6 @@ For advanced customization, see `local/README.md`.
 
 - `SKILL.md` - Main entry point
 - `references/` - Documentation (loaded progressively)
-- `scripts/` - Helper tools (version tracking, compatibility checks)
 - `local/` - Your private customizations (gitignored)
 
 ## Contributing

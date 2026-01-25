@@ -17,28 +17,6 @@ This skill uses progressive disclosure - start here for quick guidance, then rea
 
 ---
 
-## Project Version Tracking
-
-**Important**: Before working on a 4D project, ensure it has a `.4d-metadata.json` file in the project root.
-
-### Quick Setup
-
-```bash
-# From project root
-bash /path/to/skill/scripts/init-metadata.sh
-```
-
-This creates `.4d-metadata.json` with your 4D version info. The skill uses this to:
-- ✓ Warn when suggesting incompatible features
-- ✓ Check code against version-specific changelog
-- ✓ Collect feedback on version-related issues
-
-**Commit this file to git** so your team knows the project version.
-
-For details, see [version-compatibility.md](references/version-compatibility.md)
-
----
-
 ## Local Conventions
 
 **Important**: Before providing 4D guidance, check if a `local/` directory exists in this skill folder. If it does, read any markdown files inside it for project-specific or internal conventions.

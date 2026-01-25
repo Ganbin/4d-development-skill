@@ -437,21 +437,17 @@ The official changelog lists all features, fixes, and changes by version. Essent
 When reviewing code for version compatibility:
 
 1. **Check project version** from `.4d-metadata.json`
-2. **Use WebFetch** to fetch changelog (runs in separate context):
-   ```bash
-   # Helper script checks features against your version
-   bash scripts/check-features.sh
-   ```
+2. **Use WebFetch** to fetch changelog (runs in separate context)
 3. **Review extracted features** introduced after your version
 4. **Flag incompatible code** using those features
 
-### Automated Changelog Checking
+### Manual Changelog Checking
 
-The `scripts/check-features.sh` helper uses WebFetch to:
-- Fetch https://developer.4d.com/docs/Notes/updates
-- Extract features introduced AFTER your project version
-- Return clean list (minimal context usage)
-- Help identify incompatible code patterns
+To check feature availability:
+- Visit https://developer.4d.com/docs/Notes/updates
+- Find your project's 4D version
+- Review features introduced in later versions
+- Avoid using those features in your code
 
 **Note**: WebFetch runs in a separate context and returns only the results, keeping your main context clean.
 
