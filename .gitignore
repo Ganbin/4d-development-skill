@@ -1,0 +1,3 @@
+# Local customizations and project-specific conventions
+local/*
+!local/README.md
