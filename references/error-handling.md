@@ -8,16 +8,16 @@ Error handling patterns: modern Try/Catch (v20 R5+) and legacy ON ERR CALL appro
 
 ```4d
 Try
-    $entity := ds.Users.get($userId)
-    $entity.name := $newName
-    $result := $entity.save()
+    $entity:=ds.Users.get($userId)
+    $entity.name:=$newName
+    $result:=$entity.save()
 
     If (Not($result.success))
         throw($result.errors[0])
     End if
 
 Catch
-    $errors := Last errors
+    $errors:=Last errors
     For each ($error; $errors)
         ALERT("Error " + String($error.code) + ": " + $error.message)
     End for each
@@ -28,12 +28,12 @@ End try
 
 ```4d
 // Safe property access with defaults
-$userName := Try($user.name; "Anonymous")
-$userEmail := Try($user.contact.email; "no-email@domain.com")
-$permissions := Try($user.getPermissions(); New collection)
+$userName:=Try($user.name; "Anonymous")
+$userEmail:=Try($user.contact.email; "no-email@domain.com")
+$permissions:=Try($user.getPermissions(); New collection)
 
 // Safe calculations
-$average := Try($total / $count; 0)  // Avoid division by zero
+$average:=Try($total / $count; 0)  // Avoid division by zero
 ```
 
 ## Database Error Handling
@@ -46,9 +46,9 @@ Try
     For each ($operation; $operations)
         Case of
             : ($operation.type = "create")
-                $entity := ds[$operation.table].new()
+                $entity:=ds[$operation.table].new()
                 $entity.fromObject($operation.data)
-                $saveResult := $entity.save()
+                $saveResult:=$entity.save()
         End case
 
         If (Not($saveResult.success))
@@ -60,7 +60,7 @@ Try
 
 Catch
     CANCEL TRANSACTION
-    $errors := Last errors
+    $errors:=Last errors
 End try
 ```
 
@@ -69,7 +69,7 @@ End try
 ```4d
 // In Entity class
 Function saveWithValidation() -> $result : Object
-    $result := New object("success"; False; "errors"; New collection)
+    $result:=New object("success"; False; "errors"; New collection)
 
     Try
         // Pre-save validation
@@ -81,14 +81,14 @@ Function saveWithValidation() -> $result : Object
             throw(New object("code"; "VALIDATION_ERROR"; "field"; "email"; "message"; "Invalid email"))
         End if
 
-        $saveResult := This.save()
-        $result.success := $saveResult.success
+        $saveResult:=This.save()
+        $result.success:=$saveResult.success
         If (Not($saveResult.success))
-            $result.errors := $saveResult.errors
+            $result.errors:=$saveResult.errors
         End if
 
     Catch
-        $errors := Last errors
+        $errors:=Last errors
         $result.errors.push($errors[0])
     End try
 
@@ -107,12 +107,12 @@ ON ERR CALL("GlobalErrorHandler")
 #DECLARE
 var $error : Integer; $method : Text; $line : Integer
 
-$error := Error
-$method := Error method
-$line := Error line
+$error:=Error
+$method:=Error method
+$line:=Error line
 
 If ($error # 0)
-    $errorInfo := New object(\
+    $errorInfo:=New object(\
         "code"; $error; \
         "method"; $method; \
         "line"; $line; \
@@ -136,23 +136,23 @@ End if
 
 ```4d
 Function createUser($data : Object) -> $result : Object
-    $result := New object("success"; False)
+    $result:=New object("success"; False)
 
     // Install local error handler
-    $previousHandler := Method called on error
+    $previousHandler:=Method called on error
     ON ERR CALL("LocalErrorHandler")
 
     CREATE RECORD([Users])
-    [Users]Name := $data.name
-    [Users]Email := $data.email
+    [Users]Name:=$data.name
+    [Users]Email:=$data.email
     SAVE RECORD([Users])
 
     If (Error = 0)
-        $result.success := True
-        $result.userId := [Users]ID
+        $result.success:=True
+        $result.userId:=[Users]ID
     Else
-        $result.error := "Failed to create user"
-        $result.errorCode := Error
+        $result.error:="Failed to create user"
+        $result.errorCode:=Error
     End if
 
     // Restore previous handler
@@ -165,28 +165,28 @@ Function createUser($data : Object) -> $result : Object
 ```4d
 Function logError($error : Object; $context : Text)
     var $logEntry : Object
-    $logEntry := New object
-    $logEntry.timestamp := Timestamp
-    $logEntry.context := $context
-    $logEntry.process := Current process name
-    $logEntry.user := Current user
+    $logEntry:=New object
+    $logEntry.timestamp:=Timestamp
+    $logEntry.context:=$context
+    $logEntry.process:=Current process name
+    $logEntry.user:=Current user
 
     If ($error.code # Null)
-        $logEntry.errorCode := $error.code
+        $logEntry.errorCode:=$error.code
     End if
     If ($error.message # Null)
-        $logEntry.message := $error.message
+        $logEntry.message:=$error.message
     End if
 
     // Write to log file
-    $logFile := File(Folder(fk logs folder).file("errors_" + String(Current date; ISO date GMT) + ".json").platformPath)
+    $logFile:=File(Folder(fk logs folder).file("errors_" + String(Current date; ISO date GMT) + ".json").platformPath)
 
     Try
-        $existingLog := New collection
+        $existingLog:=New collection
         If ($logFile.exists)
-            $existingContent := $logFile.getText()
+            $existingContent:=$logFile.getText()
             If ($existingContent # "")
-                $existingLog := JSON Parse($existingContent)
+                $existingLog:=JSON Parse($existingContent)
             End if
         End if
 

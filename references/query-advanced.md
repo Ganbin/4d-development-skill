@@ -20,7 +20,7 @@ This is one of the most important advanced patterns. Understanding when to link 
 
 ```4d
 // WRONG: Conditions can match DIFFERENT collection elements
-$users := ds.Users.query("projects[].status = 'active' AND projects[].budget > 1000")
+$users:=ds.Users.query("projects[].status = 'active' AND projects[].budget > 1000")
 
 // This matches users who have:
 // - At least ONE active project (could be project A)
@@ -32,7 +32,7 @@ $users := ds.Users.query("projects[].status = 'active' AND projects[].budget > 1
 
 ```4d
 // CORRECT: Conditions match the SAME collection element
-$users := ds.Users.query("projects[a].status = 'active' AND projects[a].budget > 1000")
+$users:=ds.Users.query("projects[a].status = 'active' AND projects[a].budget > 1000")
 
 // This matches users who have projects where:
 // - The SAME project is both active AND has budget > 1000
@@ -44,20 +44,20 @@ $users := ds.Users.query("projects[a].status = 'active' AND projects[a].budget >
 // Find users with:
 // - At least one active high-budget project (group [a])
 // - At least one completed project (group [b])
-$users := ds.Users.query("projects[a].status = 'active' AND projects[a].budget > :1 AND projects[b].status = 'completed'"; 10000)
+$users:=ds.Users.query("projects[a].status = 'active' AND projects[a].budget > :1 AND projects[b].status = 'completed'"; 10000)
 ```
 
 ### Common Use Cases
 
 ```4d
 // Find companies with high-value active projects
-$companies := ds.Companies.query("projects[a].status = 'active' AND projects[a].budget > :1"; 50000)
+$companies:=ds.Companies.query("projects[a].status = 'active' AND projects[a].budget > :1"; 50000)
 
 // Find users with recent active timers
-$users := ds.Users.query("timers[a].status = 'running' AND timers[a].created > :1"; Current date-7)
+$users:=ds.Users.query("timers[a].status = 'running' AND timers[a].created > :1"; Current date-7)
 
 // Complex business logic
-$projects := ds.Projects.query("tasks[a].status = 'pending' AND tasks[a].priority > :1 AND tasks[a].assignee = :2"; 5; $userId)
+$projects:=ds.Projects.query("tasks[a].status = 'pending' AND tasks[a].priority > :1 AND tasks[a].assignee = :2"; 5; $userId)
 ```
 
 ---
@@ -72,11 +72,11 @@ Many-to-many relations require special syntax to distinguish between different r
 // Find movies with BOTH specific actors (not just either one)
 
 // WRONG: Matches movies with EITHER actor
-$movies := ds.Movie.query("roles.actor.lastName = 'Hanks' AND roles.actor.lastName = 'Ryan'")
+$movies:=ds.Movie.query("roles.actor.lastName = 'Hanks' AND roles.actor.lastName = 'Ryan'")
 // This can never match - one actor can't have two last names!
 
 // CORRECT: Use class index to reference different actor instances
-$movies := ds.Movie.query("roles.actor.lastName = 'Hanks' AND roles.actor{2}.lastName = 'Ryan'")
+$movies:=ds.Movie.query("roles.actor.lastName = 'Hanks' AND roles.actor{2}.lastName = 'Ryan'")
 // roles.actor = first actor reference
 // roles.actor{2} = second actor reference (different instance)
 ```
@@ -85,7 +85,7 @@ $movies := ds.Movie.query("roles.actor.lastName = 'Hanks' AND roles.actor{2}.las
 
 ```4d
 // Find movies with specific actors AND genre
-$movies := ds.Movie.query("roles.actor.lastName = :1 AND roles.actor{2}.lastName = :2 AND genres.name{3} = :3"; \
+$movies:=ds.Movie.query("roles.actor.lastName = :1 AND roles.actor{2}.lastName = :2 AND genres.name{3} = :3"; \
 "Hanks"; "Ryan"; "Comedy")
 // {3} ensures genre is treated as a separate reference
 ```
@@ -94,11 +94,11 @@ $movies := ds.Movie.query("roles.actor.lastName = :1 AND roles.actor{2}.lastName
 
 ```4d
 // Find projects involving multiple specific users
-$projects := ds.Projects.query("assignedUsers.name = :1 AND assignedUsers{2}.name = :2"; \
+$projects:=ds.Projects.query("assignedUsers.name = :1 AND assignedUsers{2}.name = :2"; \
 "John Smith"; "Jane Doe")
 
 // Find documents tagged with multiple specific tags
-$documents := ds.Documents.query("tags.name = 'urgent' AND tags{2}.name = 'finance'")
+$documents:=ds.Documents.query("tags.name = 'urgent' AND tags{2}.name = 'finance'")
 ```
 
 ---
@@ -111,12 +111,12 @@ Formula queries provide dynamic evaluation and complex logic.
 
 ```4d
 // Simple evaluation
-$users := ds.Users.query("eval(Length(This.lastName) >= 5)")
+$users:=ds.Users.query("eval(Length(This.lastName) >= 5)")
 
 // Formula with parameters
 var $settings : Object
-$settings := New object("args"; New object("minLength"; 5))
-$users := ds.Users.query("eval(Length(This.lastName) >= $1.minLength)"; $settings)
+$settings:=New object("args"; New object("minLength"; 5))
+$users:=ds.Users.query("eval(Length(This.lastName) >= $1.minLength)"; $settings)
 ```
 
 ### Formula Objects
@@ -124,26 +124,26 @@ $users := ds.Users.query("eval(Length(This.lastName) >= $1.minLength)"; $setting
 ```4d
 // Create and use formula object
 var $formula : Object
-$formula := Formula(Length(This.lastName) >= 5)
-$users := ds.Users.query($formula)
+$formula:=Formula(Length(This.lastName) >= 5)
+$users:=ds.Users.query($formula)
 
 // Formula with parameters
-$formula := Formula(Length(This.lastName) >= $1.minLength)
-$settings := New object("args"; New object("minLength"; 5))
-$users := ds.Users.query($formula; $settings)
+$formula:=Formula(Length(This.lastName) >= $1.minLength)
+$settings:=New object("args"; New object("minLength"; 5))
+$users:=ds.Users.query($formula; $settings)
 ```
 
 ### Complex Formula Examples
 
 ```4d
 // Calculate age from birthdate
-$formula := Formula((Current date - This.birthDate) \ 365 >= $1.minAge)
-$settings := New object("args"; New object("minAge"; 18))
-$adults := ds.Users.query($formula; $settings)
+$formula:=Formula((Current date - This.birthDate) \ 365 >= $1.minAge)
+$settings:=New object("args"; New object("minAge"; 18))
+$adults:=ds.Users.query($formula; $settings)
 
 // Business logic in formula
-$formula := Formula((This.totalSales > 10000) & (This.activeProjects.length > 5))
-$vipClients := ds.Clients.query($formula)
+$formula:=Formula((This.totalSales > 10000) & (This.activeProjects.length > 5))
+$vipClients:=ds.Clients.query($formula)
 ```
 
 ---
@@ -156,36 +156,36 @@ Named placeholders make complex queries more readable.
 
 ```4d
 var $settings : Object
-$settings := New object
-$settings.parameters := New object("userName"; "Smith"; "minAge"; 25)
+$settings:=New object
+$settings.parameters:=New object("userName"; "Smith"; "minAge"; 25)
 
-$users := ds.Users.query("lastName = :userName AND age >= :minAge"; $settings)
+$users:=ds.Users.query("lastName = :userName AND age >= :minAge"; $settings)
 ```
 
 ### Named Attribute Placeholders
 
 ```4d
 var $settings : Object
-$settings := New object
-$settings.parameters := New object("userName"; "Smith"; "minAge"; 25)
-$settings.attributes := New object("nameField"; "lastName")
+$settings:=New object
+$settings.parameters:=New object("userName"; "Smith"; "minAge"; 25)
+$settings.attributes:=New object("nameField"; "lastName")
 
 // Use :nameField as attribute name
-$users := ds.Users.query(":nameField = :userName AND age >= :minAge"; $settings)
+$users:=ds.Users.query(":nameField = :userName AND age >= :minAge"; $settings)
 ```
 
 ### When to Use Named Placeholders
 
 ```4d
 // Complex query with many placeholders - named version is clearer
-$settings := New object
-$settings.parameters := New object(\
+$settings:=New object
+$settings.parameters:=New object(\
 "startDate"; !2024-01-01!; \
 "endDate"; !2024-12-31!; \
 "minBudget"; 10000; \
 "status"; "active")
 
-$projects := ds.Projects.query(\
+$projects:=ds.Projects.query(\
 "created >= :startDate AND created <= :endDate AND budget >= :minBudget AND status = :status"; \
 $settings)
 ```
@@ -198,16 +198,16 @@ $settings)
 
 ```4d
 var $settings : Object
-$settings := New object
-$settings.context := "user_dashboard"  // Optimization hint
-$settings.queryPlan := True            // Get query plan
-$settings.queryPath := True            // Get execution path
+$settings:=New object
+$settings.context:="user_dashboard"  // Optimization hint
+$settings.queryPlan:=True            // Get query plan
+$settings.queryPath:=True            // Get execution path
 
-$result := ds.Projects.query("status = :1"; "active"; $settings)
+$result:=ds.Projects.query("status = :1"; "active"; $settings)
 
 // Analyze performance
-$plan := $result.queryPlan
-$path := $result.queryPath
+$plan:=$result.queryPlan
+$path:=$result.queryPath
 
 // Log or debug slow queries
 If ($path.time > 1000)  // If query took > 1 second
@@ -237,22 +237,22 @@ End if
 ```4d
 // 1. Use indexed attributes first
 // GOOD: Uses index for initial filter
-$result := ds.Projects.query("indexedStatus = 'active' AND unindexedField = 'value'")
+$result:=ds.Projects.query("indexedStatus = 'active' AND unindexedField = 'value'")
 
 // 2. Avoid leading wildcards
 // SLOW: Can't use index
-$result := ds.Users.query("name = '@son'")  // Ends with "son"
+$result:=ds.Users.query("name = '@son'")  // Ends with "son"
 
 // FASTER: Can use index
-$result := ds.Users.query("name = 'John@'")  // Starts with "John"
+$result:=ds.Users.query("name = 'John@'")  // Starts with "John"
 
 // 3. Use IN for multiple values instead of OR
 // SLOW: Multiple OR conditions
-$result := ds.Projects.query("status = 'active' OR status = 'pending' OR status = 'review'")
+$result:=ds.Projects.query("status = 'active' OR status = 'pending' OR status = 'review'")
 
 // FASTER: Single IN condition
-$statuses := New collection("active"; "pending"; "review")
-$result := ds.Projects.query("status IN :1"; $statuses)
+$statuses:=New collection("active"; "pending"; "review")
+$result:=ds.Projects.query("status IN :1"; $statuses)
 ```
 
 ---
@@ -263,20 +263,20 @@ $result := ds.Projects.query("status IN :1"; $statuses)
 
 ```4d
 // Find companies with projects that have high-value tasks
-$companies := ds.Companies.query("projects[a].tasks[b].value > :1"; 5000)
+$companies:=ds.Companies.query("projects[a].tasks[b].value > :1"; 5000)
 
 // Linked nested collections
-$companies := ds.Companies.query("projects[a].status = 'active' AND projects[a].tasks[b].priority > :1"; 8)
+$companies:=ds.Companies.query("projects[a].status = 'active' AND projects[a].tasks[b].priority > :1"; 8)
 ```
 
 ### Combined Relation and Collection Queries
 
 ```4d
 // Projects with active client and high-value tasks
-$projects := ds.Projects.query("client.status = 'active' AND tasks[a].value > :1"; 10000)
+$projects:=ds.Projects.query("client.status = 'active' AND tasks[a].value > :1"; 10000)
 
 // Users with recent timers on active projects
-$users := ds.Users.query("timers[a].created > :1 AND timers[a].project.status = 'active'"; Current date-7)
+$users:=ds.Users.query("timers[a].created > :1 AND timers[a].project.status = 'active'"; Current date-7)
 ```
 
 ### Dynamic Query Building
@@ -287,25 +287,25 @@ Function buildProjectQuery($filters : Object) -> $result : cs.ProjectsSelection
     var $queryString : Text
     var $params : Collection
 
-    $queryString := "1 = 1"  // Always true base
-    $params := New collection
+    $queryString:="1 = 1"  // Always true base
+    $params:=New collection
 
     If ($filters.status # Null)
-        $queryString := $queryString + " AND status = :"+String($params.length+1)
+        $queryString:=$queryString + " AND status = :"+String($params.length+1)
         $params.push($filters.status)
     End if
 
     If ($filters.minBudget # Null)
-        $queryString := $queryString + " AND budget >= :"+String($params.length+1)
+        $queryString:=$queryString + " AND budget >= :"+String($params.length+1)
         $params.push($filters.minBudget)
     End if
 
     If ($filters.clientId # Null)
-        $queryString := $queryString + " AND clientId = :"+String($params.length+1)
+        $queryString:=$queryString + " AND clientId = :"+String($params.length+1)
         $params.push($filters.clientId)
     End if
 
-    $result := ds.Projects.query($queryString; $params...)
+    $result:=ds.Projects.query($queryString; $params...)
 ```
 
 ### Subquery Pattern
@@ -313,11 +313,11 @@ Function buildProjectQuery($filters : Object) -> $result : cs.ProjectsSelection
 ```4d
 // Two-step query for complex logic
 // Step 1: Get qualifying projects
-$qualifyingProjects := ds.Projects.query("budget > :1 AND status = 'active'"; 50000)
+$qualifyingProjects:=ds.Projects.query("budget > :1 AND status = 'active'"; 50000)
 
 // Step 2: Get users assigned to those projects
-$projectIds := $qualifyingProjects.toCollection("id")
-$users := ds.Users.query("projects[].id IN :1"; $projectIds)
+$projectIds:=$qualifyingProjects.toCollection("id")
+$users:=ds.Users.query("projects[].id IN :1"; $projectIds)
 ```
 
 ---
@@ -328,18 +328,18 @@ $users := ds.Users.query("projects[].id IN :1"; $projectIds)
 
 ```4d
 Function safeQuery($queryString : Text; $params : Collection) -> $result : Object
-    $result := New object("success"; False)
+    $result:=New object("success"; False)
 
     Try
-        $selection := ds.Projects.query($queryString; $params...)
-        $result.success := True
-        $result.selection := $selection
-        $result.count := $selection.length
+        $selection:=ds.Projects.query($queryString; $params...)
+        $result.success:=True
+        $result.selection:=$selection
+        $result.count:=$selection.length
 
     Catch
-        $errors := Last errors
-        $result.error := $errors[0].message
-        $result.selection := ds.Projects.newSelection()  // Empty selection
+        $errors:=Last errors
+        $result.error:=$errors[0].message
+        $result.selection:=ds.Projects.newSelection()  // Empty selection
     End try
 
     return $result
@@ -372,7 +372,7 @@ Function safeQuery($queryString : Text; $params : Collection) -> $result : Objec
 
 **Named params**: `:paramName` with settings.parameters object
 
-**Query plan**: Set `settings.queryPlan := True` and `settings.queryPath := True`
+**Query plan**: Set `settings.queryPlan:=True` and `settings.queryPath:=True`
 
 ---
 

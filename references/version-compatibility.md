@@ -15,7 +15,7 @@ Quick reference for feature availability across 4D versions.
 | Ternary `? :` | v19 R4 | ✗ | ✓ |
 | Short-circuit `&&`/`\|\|` | v19 R4 | ✗ | ✓ |
 | Object/Collection literals `{}`/`[]` | v20 | ✗ | ✓ |
-| Inline `var := value` | v20 R3 | ✗ | ✓ |
+| Inline `var:=value` | v20 R3 | ✗ | ✓ |
 | `Try()` function | v20 R4 | ✗ | ✓ |
 | `Try/Catch` blocks | v20 R5 | ✗ | ✓ |
 | Shared/Singleton classes | v20 R5 | ✗ | ✓ |

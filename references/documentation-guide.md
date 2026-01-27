@@ -49,12 +49,12 @@ The authoritative source for 4D language reference, ORDA, commands, and best pra
 
 ```4d
 // Fetch specific documentation page
-$url := "https://developer.4d.com/docs/ORDA/queries"
-$content := WebFetch($url; "Extract the main content about ORDA queries")
+$url:="https://developer.4d.com/docs/ORDA/queries"
+$content:=WebFetch($url; "Extract the main content about ORDA queries")
 
 // Search for specific command
-$url := "https://developer.4d.com/docs/commands/query"
-$info := WebFetch($url; "Show the syntax and examples for the query command")
+$url:="https://developer.4d.com/docs/commands/query"
+$info:=WebFetch($url; "Show the syntax and examples for the query command")
 ```
 
 ### Navigation Tips

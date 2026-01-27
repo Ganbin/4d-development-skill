@@ -28,15 +28,15 @@ C_LONGINT($2; $number)
 
 ```4d
 ARRAY TEXT($array; 5)
-$array{0} := "Element zero"  // Special initialization element
-$array{1} := "First"         // Actual first element
-$size := Size of array($array)
+$array{0}:="Element zero"  // Special initialization element
+$array{1}:="First"         // Actual first element
+$size:=Size of array($array)
 ```
 
 ### Collections (0-based, modern)
 
 ```4d
-$col := New collection("First"; "Second")
+$col:=New collection("First"; "Second")
 $col.push("New"); $col.remove(0; 1)
 ```
 
@@ -48,8 +48,8 @@ $col.push("New"); $col.remove(0; 1)
 // WRONG: = is comparison, NOT assignment
 If ($name = Request("Enter name"))  // This compares, doesn't assign!
 
-// CORRECT: := is assignment
-$name := Request("Enter name")
+// CORRECT::=is assignment
+$name:=Request("Enter name")
 If ($name # "")  // Then compare
 ```
 
@@ -57,17 +57,17 @@ If ($name # "")  // Then compare
 
 ```4d
 ARRAY TEXT($array; 5)
-$array{0} := "Init"    // Special element zero
-$array{1} := "First"   // Actual first element (1-based)
+$array{0}:="Init"    // Special element zero
+$array{1}:="First"   // Actual first element (1-based)
 ```
 
 ### 3. Case Sensitivity
 
 ```4d
-$MyVar := "test"
-$myvar := "changed"    // Same variable (case-insensitive)
+$MyVar:="test"
+$myvar:="changed"    // Same variable (case-insensitive)
 
-$obj.Name := "John"    // Different from $obj.name (case-sensitive)
+$obj.Name:="John"    // Different from $obj.name (case-sensitive)
 ```
 
 ## Legacy Patterns & Migration
@@ -76,11 +76,11 @@ $obj.Name := "John"    // Different from $obj.name (case-sensitive)
 
 ```4d
 // OLD: Interprocess variables
-<>CurrentUser := "john.doe"
+<>CurrentUser:="john.doe"
 
 // NEW: Shared Storage
 Use (Storage)
-    Storage.currentUser := New shared object("name"; "john.doe")
+    Storage.currentUser:=New shared object("name"; "john.doe")
 End use
 ```
 
@@ -98,7 +98,7 @@ End if
 Try
     $entity.save()
 Catch
-    $errors := Last errors
+    $errors:=Last errors
 End try
 ```
 
@@ -112,7 +112,7 @@ ARRAY TEXT($arr; 0)
 APPEND TO ARRAY($arr; "item")
 
 // NEW: 0-based collections
-$col := New collection
+$col:=New collection
 $col.push("item")
 ```
 

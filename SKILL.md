@@ -92,8 +92,8 @@ These are the most common mistakes in 4D code. **Read these first** if you're ne
 // WRONG: = is comparison, NOT assignment
 If ($name = Request("Enter name"))  // This compares, doesn't assign!
 
-// CORRECT: := is assignment
-$name := Request("Enter name")
+// CORRECT::=is assignment
+$name:=Request("Enter name")
 If ($name # "")  // Then compare
 ```
 
@@ -103,11 +103,11 @@ If ($name # "")  // Then compare
 
 ```4d
 // Strings and Arrays: 1-based
-$firstChar := $text[[1]]       // First character
-$array{1} := "First"           // First array element
+$firstChar:=$text[[1]]       // First character
+$array{1}:="First"           // First array element
 
 // Collections: 0-based
-$collection[0] := "First"      // First element
+$collection[0]:="First"      // First element
 ```
 
 **Rule:** Remember which type you're working with to avoid off-by-one errors.
@@ -116,10 +116,10 @@ $collection[0] := "First"      // First element
 
 ```4d
 // WRONG: Cannot use placeholders with null
-$result := ds.Users.query("email = :1"; Null)  // Doesn't work!
+$result:=ds.Users.query("email = :1"; Null)  // Doesn't work!
 
 // CORRECT: Direct null syntax
-$result := ds.Users.query("email = null")
+$result:=ds.Users.query("email = null")
 ```
 
 **Rule:** Always use literal `null` in query strings, never as a placeholder value.
@@ -189,11 +189,11 @@ Many modern features (return, break, {}, [], ?:, Try/Catch, +=) are NOT availabl
 ```4d
 // MOST COMMON MISTAKE
 $value = 10                    // This compares, returns True/False
-$value := 10                   // This assigns
+$value:=10                   // This assigns
 
 // Another common pattern
 If ($input = Request("Name"))  // WRONG: compares, doesn't assign
-$input := Request("Name")      // CORRECT: assign first
+$input:=Request("Name")      // CORRECT: assign first
 If ($input # "")               // Then compare
 ```
 
@@ -201,12 +201,12 @@ If ($input # "")               // Then compare
 
 ```4d
 // Variables are case-INSENSITIVE
-$MyVar := "test"
-$myvar := "changed"            // Same variable!
+$MyVar:="test"
+$myvar:="changed"            // Same variable!
 
 // Object properties are case-SENSITIVE
-$obj.Name := "John"            // Different from $obj.name
-$obj.name := "Jane"            // These are different properties!
+$obj.Name:="John"            // Different from $obj.name
+$obj.name:="Jane"            // These are different properties!
 ```
 
 ### 3. Collection vs Array Indexing
@@ -214,36 +214,36 @@ $obj.name := "Jane"            // These are different properties!
 ```4d
 // Arrays: 1-based with special element zero
 ARRAY TEXT($array; 5)
-$array{0} := "Init"            // Special element zero
-$array{1} := "First"           // First actual element
+$array{0}:="Init"            // Special element zero
+$array{1}:="First"           // First actual element
 
 // Collections: 0-based (like most languages)
-$collection := New collection("First"; "Second")
-$first := $collection[0]       // First element
+$collection:=New collection("First"; "Second")
+$first:=$collection[0]       // First element
 ```
 
 ### 4. Null Queries Require Special Syntax
 
 ```4d
 // WRONG: Null cannot be a placeholder value
-$orphans := ds.Projects.query("clientId = :1"; Null)
+$orphans:=ds.Projects.query("clientId = :1"; Null)
 
 // CORRECT: Use literal null in query string
-$orphans := ds.Projects.query("clientId = null")
+$orphans:=ds.Projects.query("clientId = null")
 
 // CORRECT: Check for not null
-$assigned := ds.Projects.query("clientId != null")
+$assigned:=ds.Projects.query("clientId != null")
 ```
 
 ### 5. Linked Collection Queries
 
 ```4d
 // WRONG: Conditions can match different collection elements
-$users := ds.Users.query("projects[].status = 'active' AND projects[].budget > 1000")
+$users:=ds.Users.query("projects[].status = 'active' AND projects[].budget > 1000")
 // This might match: user has ONE active project AND ONE high-budget project (different projects)
 
 // CORRECT: Link conditions to SAME collection element
-$users := ds.Users.query("projects[a].status = 'active' AND projects[a].budget > 1000")
+$users:=ds.Users.query("projects[a].status = 'active' AND projects[a].budget > 1000")
 // This matches: user has projects that are BOTH active AND high-budget
 ```
 

@@ -9,17 +9,17 @@ Modern 4D development patterns: ORDA, classes, entity methods, and contemporary 
 ```4d
 // File: Classes/Person.4dm
 Class constructor($firstName : Text; $lastName : Text)
-    This.firstName := $firstName
-    This.lastName := $lastName
+    This.firstName:=$firstName
+    This.lastName:=$lastName
 
 // Computed properties
 Function get fullName() : Text
     return This.firstName + " " + This.lastName
 
 Function set fullName($name : Text)
-    $parts := Split string($name; " ")
-    This.firstName := $parts[0]
-    This.lastName := $parts[1]
+    $parts:=Split string($name; " ")
+    This.firstName:=$parts[0]
+    This.lastName:=$parts[1]
 
 // Instance methods
 Function greet($greeting : Text) : Text
@@ -33,15 +33,15 @@ Function greet($greeting : Text) : Text
 Class extends Person
 Class constructor($firstName : Text; $lastName : Text; $role : Text)
     Super($firstName; $lastName)
-    This.role := $role
+    This.role:=$role
 
 // Singleton (shared across app)
 singleton Class constructor()
-    This.settings := New object
+    This.settings:=New object
 
 // Shared singleton (thread-safe) - v20 R5+
 shared singleton Class constructor()
-    This.cache := New shared object
+    This.cache:=New shared object
 ```
 
 ## ORDA Entity Patterns
@@ -58,12 +58,12 @@ Function get STATUS_RUNNING() : Text
 
 // Business logic methods
 Function startTimer() -> $result : Object
-    $result := New object("success"; False)
+    $result:=New object("success"; False)
     If (This.status = "stopped")
-        This.status := This.STATUS_RUNNING
-        This.startedAt := Current time
+        This.status:=This.STATUS_RUNNING
+        This.startedAt:=Current time
         This.save()
-        $result.success := True
+        $result.success:=True
     End if
     return $result
 
@@ -84,10 +84,10 @@ Function getActiveTimersForUser($userId : Integer) -> $timers : cs.PROJ_TIMERSSe
 
 // Factory methods
 Function createTimerForProject($userId : Integer; $projectId : Integer) -> $timer : cs.PROJ_TIMERSEntity
-    $timer := This.new()
-    $timer.userId := $userId
-    $timer.projectId := $projectId
-    $timer.status := "stopped"
+    $timer:=This.new()
+    $timer.userId:=$userId
+    $timer.projectId:=$projectId
+    $timer.status:="stopped"
     $timer.save()
     return $timer
 ```
@@ -99,7 +99,7 @@ Function createTimerForProject($userId : Integer; $projectId : Integer) -> $time
 Class extends EntitySelection
 
 Function toAPIFormat() -> $result : Collection
-    $result := New collection
+    $result:=New collection
     For each ($timer; This)
         $result.push(New object("id"; $timer.id; "status"; $timer.status; "isActive"; $timer.isActive))
     End for each
@@ -118,24 +118,24 @@ Function getTotalDuration() -> $total : Integer
 ```4d
 // File: Methods/TSAPI_timer.4dm
 #DECLARE() -> $result : cs.TSAPI_callbackResult
-$result := cs.TSAPI_callbackResult.new()
-$result.statusCode := 200
+$result:=cs.TSAPI_callbackResult.new()
+$result.statusCode:=200
 
 // Delegate business logic to dataclass methods
 Case of
     : (webRequest.request.method = "GET")
-        $timers := ds.PROJ_TIMERS.getActiveTimersForUser(Session.storage.user.id)
-        $result.data := $timers.toAPIFormat()
+        $timers:=ds.PROJ_TIMERS.getActiveTimersForUser(Session.storage.user.id)
+        $result.data:=$timers.toAPIFormat()
 
     : (webRequest.request.method = "POST")
-        $data := webRequest.request.data
-        $timer := ds.PROJ_TIMERS.createTimerForProject(Session.storage.user.id; $data.projectId)
-        $result.data := $timer.toObject("id,status,projectId")
+        $data:=webRequest.request.data
+        $timer:=ds.PROJ_TIMERS.createTimerForProject(Session.storage.user.id; $data.projectId)
+        $result.data:=$timer.toObject("id,status,projectId")
 
     : (webRequest.request.method = "PATCH")
-        $timer := ds.PROJ_TIMERS.get(webRequest.request.parameters.id)
-        $actionResult := $timer.startTimer()  // Entity method
-        $result.data := $actionResult
+        $timer:=ds.PROJ_TIMERS.get(webRequest.request.parameters.id)
+        $actionResult:=$timer.startTimer()  // Entity method
+        $result.data:=$actionResult
 End case
 
 return $result
@@ -148,22 +148,22 @@ return $result
 ```4d
 // Initialize in On Startup
 Use (Storage)
-    Storage.app := New shared object("config"; New shared object; "cache"; New shared object)
+    Storage.app:=New shared object("config"; New shared object; "cache"; New shared object)
 End use
 
 // Configuration methods
 Function setGlobalConfig($key : Text; $value : Variant)
     Use (Storage.app.config)
-        Storage.app.config[$key] := $value
+        Storage.app.config[$key]:=$value
     End use
 
 // Caching with loader pattern
 Function getCachedData($key : Text; $loader : Object) -> $data : Variant
     Use (Storage.app.cache)
-        $data := Storage.app.cache[$key]
+        $data:=Storage.app.cache[$key]
         If ($data = Null)
-            $data := $loader.call()
-            Storage.app.cache[$key] := $data
+            $data:=$loader.call()
+            Storage.app.cache[$key]:=$data
         End if
     End use
 ```
@@ -174,28 +174,28 @@ Function getCachedData($key : Text; $loader : Object) -> $data : Variant
 
 ```4d
 Function createProject($data : Object) -> $result : Object
-    $result := New object("success"; False)
+    $result:=New object("success"; False)
 
     Try
         If (This._validateProjectData($data))
-            $project := ds.Projects.new()
+            $project:=ds.Projects.new()
             $project.fromObject($data)
-            $project.created := Current time
+            $project.created:=Current time
 
-            $saveResult := $project.save()
+            $saveResult:=$project.save()
             If ($saveResult.success)
-                $result.success := True
-                $result.project := $project.toObject("id,name,status")
+                $result.success:=True
+                $result.project:=$project.toObject("id,name,status")
             Else
-                $result.errors := $saveResult.errors
+                $result.errors:=$saveResult.errors
             End if
         Else
-            $result.error := "Invalid project data"
+            $result.error:="Invalid project data"
         End if
 
     Catch
-        $result.error := "Unexpected error"
-        $result.details := Last errors
+        $result.error:="Unexpected error"
+        $result.details:=Last errors
     End try
 
     return $result
@@ -208,13 +208,13 @@ Function _validateProjectData($data : Object) -> $valid : Boolean
 
 ```4d
 // Safe property access with defaults
-$userName := Try($user.name; "Anonymous")
-$userEmail := Try($user.contact.email; "no-email@domain.com")
-$permissions := Try($user.getPermissions(); New collection)
+$userName:=Try($user.name; "Anonymous")
+$userEmail:=Try($user.contact.email; "no-email@domain.com")
+$permissions:=Try($user.getPermissions(); New collection)
 
 // Safe calculations
-$average := Try($total / $count; 0)  // Avoid division by zero
-$percentage := Try(($value / $total) * 100; 0)
+$average:=Try($total / $count; 0)  // Avoid division by zero
+$percentage:=Try(($value / $total) * 100; 0)
 ```
 
 ## Design Patterns
@@ -224,21 +224,21 @@ $percentage := Try(($value / $total) * 100; 0)
 ```4d
 // File: Classes/UserRepository.4dm
 Class constructor($datastore : Object)
-    This.ds := $datastore
+    This.ds:=$datastore
 
 Function findByEmail($email : Text) -> $user : cs.USERSEntity
     return This.ds.Users.query("email = :1"; $email).first()
 
 Function createUser($data : Object) -> $result : Object
-    $result := New object("success"; False)
+    $result:=New object("success"; False)
     Try
-        $user := This.ds.Users.new()
+        $user:=This.ds.Users.new()
         $user.fromObject($data)
-        $user.created := Current time
-        $saveResult := $user.save()
-        $result := New object("success"; $saveResult.success; "user"; $user)
+        $user.created:=Current time
+        $saveResult:=$user.save()
+        $result:=New object("success"; $saveResult.success; "user"; $user)
     Catch
-        $result.error := "Creation failed"
+        $result.error:="Creation failed"
     End try
     return $result
 ```

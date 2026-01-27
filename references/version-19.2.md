@@ -48,10 +48,10 @@ End if
 ```4d
 // Class: MyClass
 Class constructor($param : Text)
-    This.myProperty := $param
+    This.myProperty:=$param
 
 Function myMethod($input : Text) -> $output : Text
-    $output := This.myProperty + $input
+    $output:=This.myProperty + $input
 ```
 
 **Class inheritance**:
@@ -66,22 +66,22 @@ Class constructor($param : Text)
 ```4d
 // Class: MyTableEntity (extends Entity)
 Function fullName() -> $result : Text
-    $result := This.firstName + " " + This.lastName
+    $result:=This.firstName + " " + This.lastName
 ```
 
 ### Objects and Collections
 
 **Creating objects** - Use `New object`:
 ```4d
-$obj := New object
-$obj := New object("key1"; "value1"; "key2"; 42)
+$obj:=New object
+$obj:=New object("key1"; "value1"; "key2"; 42)
 ```
 
 **Creating collections** - Use `New collection`:
 ```4d
-$col := New collection
-$col := New collection("a"; "b"; "c")
-$col := New collection(1; 2; 3)
+$col:=New collection
+$col:=New collection("a"; "b"; "c")
+$col:=New collection(1; 2; 3)
 ```
 
 ### ORDA (Object-Relational Data Access)
@@ -104,22 +104,22 @@ For each ($item; $collection)
 End for each
 
 For each ($key; $object)
-    $value := $object[$key]
+    $value:=$object[$key]
 End for each
 ```
 
 ### Pointers
 
 ```4d
-$ptr := -> $myVariable
-$value := $ptr->
+$ptr:=-> $myVariable
+$value:=$ptr->
 ```
 
 ### Formula Objects
 
 ```4d
-$formula := Formula($a + $b)
-$result := $formula.call(New object("a"; 1; "b"; 2))
+$formula:=Formula($a + $b)
+$result:=$formula.call(New object("a"; 1; "b"; 2))
 ```
 
 ---
@@ -135,14 +135,14 @@ Function myFunc() -> $result : Text
     If (condition)
         return "early exit"  // ERROR: 'return' not recognized
     End if
-    $result := "normal"
+    $result:="normal"
 
 // CORRECT - Use the declared return variable
 Function myFunc() -> $result : Text
     If (condition)
-        $result := "early exit"
+        $result:="early exit"
     Else
-        $result := "normal"
+        $result:="normal"
     End if
 ```
 
@@ -156,11 +156,11 @@ For ($i; 1; 100)
 End for
 
 // CORRECT - Use a boolean flag
-$continue := True
+$continue:=True
 For ($i; 1; 100)
     If ($continue)
         If ($found)
-            $continue := False
+            $continue:=False
         End if
     End if
 End for
@@ -189,25 +189,25 @@ End for each
 **DO NOT USE `{}` for objects**:
 ```4d
 // WRONG - Not available in v19.2
-$obj := {}
-$obj := {name: "John"; age: 30}
+$obj:={}
+$obj:={name: "John"; age: 30}
 
 // CORRECT - Use New object
-$obj := New object
-$obj := New object("name"; "John"; "age"; 30)
+$obj:=New object
+$obj:=New object("name"; "John"; "age"; 30)
 ```
 
 **DO NOT USE `[]` for collections**:
 ```4d
 // WRONG - Not available in v19.2
-$col := []
-$col := [1; 2; 3]
-$col := ["a"; "b"; "c"]
+$col:=[]
+$col:=[1; 2; 3]
+$col:=["a"; "b"; "c"]
 
 // CORRECT - Use New collection
-$col := New collection
-$col := New collection(1; 2; 3)
-$col := New collection("a"; "b"; "c")
+$col:=New collection
+$col:=New collection(1; 2; 3)
+$col:=New collection("a"; "b"; "c")
 ```
 
 ### Ternary Operator (Introduced in v19 R4)
@@ -215,17 +215,17 @@ $col := New collection("a"; "b"; "c")
 **DO NOT USE ternary operator `? :`**:
 ```4d
 // WRONG - Not available in v19.2
-$result := ($condition) ? "yes" : "no"
+$result:=($condition) ? "yes" : "no"
 
 // CORRECT - Use If/Else or Choose
 If ($condition)
-    $result := "yes"
+    $result:="yes"
 Else
-    $result := "no"
+    $result:="no"
 End if
 
 // Or use Choose for simple cases
-$result := Choose($condition; "yes"; "no")
+$result:=Choose($condition; "yes"; "no")
 ```
 
 ### Short-Circuit Operators (Introduced in v19 R4)
@@ -253,17 +253,17 @@ End if
 **DO NOT USE inline declaration + assignment**:
 ```4d
 // WRONG - Not available in v19.2
-var $text := "hello"
-var $number := 42
-var $obj := New object("key"; "value")
-var $text : Text := "hello"
+var $text:="hello"
+var $number:=42
+var $obj:=New object("key"; "value")
+var $text : Text:="hello"
 
 // CORRECT - Separate declaration and assignment
 var $text : Text
-$text := "hello"
+$text:="hello"
 
 var $number : Integer
-$number := 42
+$number:=42
 ```
 
 ### Class Property Keyword (Introduced in v20)
@@ -277,8 +277,8 @@ Class constructor
 
 // CORRECT - Assign properties in constructor
 Class constructor
-    This.name := ""
-    This.age := 0
+    This.name:=""
+    This.age:=0
 ```
 
 ### Try-Catch Error Handling (Introduced in v20 R5)
@@ -287,14 +287,14 @@ Class constructor
 ```4d
 // WRONG - Not available in v19.2
 Try
-    $result := riskyOperation()
+    $result:=riskyOperation()
 Catch
-    $error := Last errors
+    $error:=Last errors
 End try
 
 // CORRECT - Use ON ERR CALL or custom error handling
 ON ERR CALL("ErrorHandler")
-$result := riskyOperation()
+$result:=riskyOperation()
 ON ERR CALL("")
 
 // Or use a pattern like ErrorHandler.try4D() if available in codebase
@@ -305,11 +305,11 @@ ON ERR CALL("")
 **DO NOT USE `Try()` function**:
 ```4d
 // WRONG - Not available in v19.2
-$result := Try(JSON Parse($text))
+$result:=Try(JSON Parse($text))
 
 // CORRECT - Use error handling method
 ON ERR CALL("SilentErrorHandler")
-$result := JSON Parse($text)
+$result:=JSON Parse($text)
 ON ERR CALL("")
 ```
 
@@ -323,7 +323,7 @@ singleton Class constructor
 
 // CORRECT - Manage shared state manually with Storage or Use/End use
 Use (Storage)
-    Storage.mySharedData := "value"
+    Storage.mySharedData:="value"
 End use
 ```
 
@@ -337,9 +337,9 @@ $total -= $amount
 $value *= 2
 
 // CORRECT - Use full assignment
-$count := $count + 1
-$total := $total - $amount
-$value := $value * 2
+$count:=$count + 1
+$total:=$total - $amount
+$value:=$value * 2
 ```
 
 ### ORDA Aliases (Introduced in v19 R4)
@@ -352,7 +352,7 @@ $value := $value * 2
 
 // CORRECT - Use computed attributes or functions instead
 Function fullAddress() -> $result : Text
-    $result := This.address.street + ", " + This.address.city
+    $result:=This.address.street + ", " + This.address.city
 ```
 
 ---
@@ -393,7 +393,7 @@ Function fullAddress() -> $result : Text
 ### Multi-line Statements
 Use backslash `\` at the end of a line to continue:
 ```4d
-$result := $longVariable1 + \
+$result:=$longVariable1 + \
     $longVariable2 + \
     $longVariable3
 ```
@@ -402,7 +402,7 @@ $result := $longVariable1 + \
 - `:=` is assignment
 - `=` is comparison
 ```4d
-$var := 10    // Assignment
+$var:=10    // Assignment
 If ($var = 10)  // Comparison
 ```
 
@@ -422,7 +422,7 @@ End case
 ### Bit Testing
 Use `??` for bit testing (this IS available in v19.2):
 ```4d
-$bitSet := ($flags ?? 3)  // Test if bit 3 is set
+$bitSet:=($flags ?? 3)  // Test if bit 3 is set
 ```
 
 ---
@@ -474,7 +474,7 @@ The `local/` folder (if it exists) is gitignored and contains internal or client
 | ORDA Aliases | NO | v19 R4 |
 | `{}` / `[]` literals | NO | v20 |
 | `property` keyword | NO | v20 |
-| Inline `var $x := value` | NO | v20 R3 |
+| Inline `var $x:=value` | NO | v20 R3 |
 | `Try()` expression | NO | v20 R4 |
 | `Try...Catch` blocks | NO | v20 R5 |
 | Shared/Singleton classes | NO | v20 R5 |
