@@ -69,7 +69,7 @@ Function startTimer() -> $result : Object
 
 // Computed properties
 Function get isActive() : Boolean
-    return (This.status = This.STATUS_RUNNING) | (This.status = "paused")
+    return (This.status = This.STATUS_RUNNING) || (This.status = "paused")
 ```
 
 ### DataClass Methods (Factory & Queries)
@@ -201,7 +201,7 @@ Function createProject($data : Object) -> $result : Object
     return $result
 
 Function _validateProjectData($data : Object) -> $valid : Boolean
-    return ($data # Null) & ($data.name # "") & ($data.clientId # Null)
+    return ($data # Null) && ($data.name # "") && ($data.clientId # Null)
 ```
 
 ### Try Function for Safety (v20 R4+)

@@ -142,7 +142,7 @@ $settings:=New object("args"; New object("minAge"; 18))
 $adults:=ds.Users.query($formula; $settings)
 
 // Business logic in formula
-$formula:=Formula((This.totalSales > 10000) & (This.activeProjects.length > 5))
+$formula:=Formula((This.totalSales > 10000) && (This.activeProjects.length > 5))
 $vipClients:=ds.Clients.query($formula)
 ```
 

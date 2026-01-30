@@ -159,8 +159,8 @@ $greaterEqual:=($a >= $b)
 
 ```4d
 // Bitwise operators (ALWAYS evaluate both sides)
-$result:=($a = 1) & ($b = 2)    // Bitwise AND
-$result:=($a = 1) | ($b = 2)    // Bitwise OR
+$result:=($a = 1) && ($b = 2)    // Bitwise AND
+$result:=($a = 1) || ($b = 2)    // Bitwise OR
 
 // Short-circuit operators (v19 R4+, NOT in v19.2 LTS!)
 $result:=($a = 1) && ($b = 2)   // Short-circuit AND

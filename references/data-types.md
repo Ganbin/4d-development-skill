@@ -249,7 +249,7 @@ $rounded:=Round($real; 2)                 // Rounded to 2 decimals
 
 // To Boolean
 $bool:=Bool($value)                       // Any type to boolean
-$bool:=($value # Null) & ($value # "")   // Custom boolean logic
+$bool:=($value # Null) && ($value # "")   // Custom boolean logic
 
 // To Date/Time
 $date:=Date($text)                        // Text to date
@@ -267,7 +267,7 @@ Function safeString($value : Variant) -> $result : Text
 // Safe number conversion
 Function safeNumber($value : Variant) -> $result : Real
     Case of
-        : (Type($value) = Is real) | (Type($value) = Is longint)
+        : (Type($value) = Is real) || (Type($value) = Is longint)
             $result:=$value
         : (Type($value) = Is text)
             $result:=Num($value)
@@ -282,16 +282,24 @@ Function safeNumber($value : Variant) -> $result : Real
 // Type checking
 $type:=Type($variable)
 $isText:=(Type($variable) = Is text)
-$isNumber:=(Type($variable) = Is longint) | (Type($variable) = Is real)
+$isNumber:=(Type($variable) = Is longint) || (Type($variable) = Is real)
+
+// Value type (for object properties and expressions)
+$vType:=Value type($obj.age)              // Always Is real for numerical obj properties
+
+// IMPORTANT: Numerical object properties are ALWAYS considered Real values
+// Value type() on a numerical object property returns Is real, never Is longint
+$obj:=New object("count"; 5)
+Value type($obj.count)                    // Is real (even though 5 looks like integer)
 
 // Null and undefined
 $isNull:=($value = Null)
 $isUndefined:=($value = Undefined)
-$isEmpty:=($value = Null) | ($value = Undefined) | ($value = "")
+$isEmpty:=($value = Null) || ($value = Undefined) || ($value = "")
 
 // Value validation
 $isValidEmail:=Match regex("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$"; $email)
-$isPositive:=(Type($number) = Is real) & ($number > 0)
+$isPositive:=(Type($number) = Is real) && ($number > 0)
 ```
 
 ---
