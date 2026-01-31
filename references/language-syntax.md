@@ -1,414 +1,391 @@
-# 4D Language Syntax & Operators
+# Language Syntax Reference
 
-4D-specific syntax and operators that differ from other programming languages. Focus on critical syntax differences and common mistakes.
+> Curated reference for 4D v21. For full documentation, see pointed files in docs/.
 
 ## Table of Contents
-- Assignment vs Comparison (MOST CRITICAL)
-- Multi-line Statements
-- String Operations
-- Operators & Logic
-- Control Flow
-- Object & Collection Syntax
-- Critical Mistakes to Avoid
+1. [Assignment vs Comparison](#1-assignment-vs-comparison)
+2. [Variable Declaration](#2-variable-declaration)
+3. [Operators](#3-operators)
+4. [Control Flow](#4-control-flow)
+5. [Methods and Functions](#5-methods-and-functions)
+6. [String Operations](#6-string-operations)
+7. [Multi-line Statements](#7-multi-line-statements)
+8. [Comments](#8-comments)
+9. [Formulas](#9-formulas)
+10. [Go Deeper](#10-go-deeper)
 
 ---
 
-## CRITICAL: Assignment vs Comparison
+## 1. Assignment vs Comparison
 
-This is the **#1 most common mistake** in 4D code.
+**Most critical rule in 4D.** Getting it wrong produces silent bugs.
 
-### The Rule
+- `:=` assigns a value. `=` tests equality (returns Boolean).
 
 ```4d
-// ASSIGNMENT: Use:=(colon-equals)
-$name:="John Doe"
-$age:=30
-
-// COMPARISON: Use = (single equals)
-If ($name = "John Doe")  // This compares, doesn't assign!
+$name:="John"          // ASSIGNMENT: stores "John"
+If ($name="John")      // COMPARISON: tests equality, returns True
 ```
 
-### Common Mistake Pattern
+### Common Mistake
 
 ```4d
-// WRONG: This compares, doesn't assign!
-If ($name = Request("Enter name"))  // Comparison returns True/False
-    // $name was NOT assigned!
-End if
+// WRONG -- compares, does NOT assign. $input stays "".
+If ($input=Request("Enter name:"))
 
-// CORRECT: Assign first, then compare
-$name:=Request("Enter name")
-If ($name # "")  // Now compare the assigned value
-    // $name has the user input
+// CORRECT -- assign first, then check OK
+$input:=Request("Enter name:")
+If (OK=1)
+    QUERY([People];[People]Name=$input)
 End if
 ```
 
-### Why This Matters
+### More Assignment Patterns
 
 ```4d
-// This looks like it should work, but doesn't
-$value = 10  // Returns True (10 = 10), doesn't assign!
-
-// Always use:=for assignment
-$value:=10  // Correctly assigns 10 to $value
+[Products]Size:=$myNumber           // field assignment
+$obj.name:="Smith"                  // object property
+$col[0]:="first"                    // collection element
+$x+=5                               // compound: $x:=$x+5
 ```
 
 ---
 
-## Multi-line Statements
+## 2. Variable Declaration
 
-Use backslash `\` at end of line to continue to next line.
-
-### Query Example
+Use `var`. Variables get their type's default value on declaration.
 
 ```4d
-$result:=ds.Users.query("firstName = :1 AND \
-lastName = :2 AND \
-age > :3"; \
-$firstName; $lastName; $minAge)
+var $name : Text        // ""         var $ok : Boolean      // False
+var $age : Integer      // 0          var $date : Date       // !00-00-00!
+var $price : Real       // 0.0        var $time : Time       // ?00:00:00?
+var $obj : Object       // Null       var $col : Collection  // Null
+var $any : Variant      // undefined  var $ptr : Pointer     // Null
+var $pic : Picture      // empty      var $blob : Blob       // empty
 ```
 
-### Object Creation
+### With Initialization / Type Inference
 
 ```4d
-$user:=New object(\
-"name"; $name; \
-"email"; $email; \
-"active"; True)
+var $greeting : Text:="hello"        // explicit type + value
+var $config : Object:=New object()
+var $text:="hello"                   // inferred as Text
+var $obj:={}                         // inferred as Object
+var $col:=[]                         // inferred as Collection
 ```
 
-### Rules
-- Backslash must be **at the end** of the line
-- No spaces after the backslash
-- Works in commands, formulas, and expressions
+### Class-Typed Variables
+
+```4d
+var $file : 4D.File             // built-in class
+var $person : cs.Person         // user class
+var $entity : cs.EmployeeEntity // ORDA class
+```
+
+### Variable Scopes
+
+| Prefix | Scope | Example |
+|--------|-------|---------|
+| `$` | Local (method only) | `$name` |
+| *(none)* | Process | `myVar` |
+| `<>` | Interprocess (deprecated) | `<>globalID` |
 
 ---
 
-## String Operations
+## 3. Operators
 
-4D has unique string operations not found in most languages.
+### Arithmetic
 
-### String Concatenation
+`+` add, `-` subtract, `*` multiply, `/` divide, `\` integer divide, `%` modulo, `^` exponent
+
+### Comparison
+
+`=` equal, `#` not equal, `<` `>` `<=` `>=`
+
+### Logical
+
+| Op | Type | Behavior |
+|----|------|----------|
+| `&` | AND | Evaluates both sides, returns Boolean |
+| `\|` | OR | Evaluates both sides, returns Boolean |
+| `&&` | Short-circuit AND | Stops at first falsy, returns the value itself |
+| `\|\|` | Short-circuit OR | Stops at first truthy, returns the value itself |
 
 ```4d
-$fullName:=$firstName + " " + $lastName
-$message:="Hello, " + $name + "!"
+// Boolean operators
+If (($age>18) & ($hasID=True))  // both sides always evaluated
+
+// Short-circuit: returns values, enables null-safe patterns
+$phone:=$emp.phone || "n/a"
+$tax:=$item.taxRate && ($item.price*$item.taxRate)
+If (($obj#Null) && ($obj.value>10))  // safe: second part skipped if Null
 ```
 
-### String Repetition (UNIQUE TO 4D)
+### Ternary
 
 ```4d
-$stars:="*" * 10         // "**********"
-$indent:="  " * $level   // Multiple spaces based on level
-$line:="-" * 50          // "------..." (50 dashes)
+$beverage:=($age>=21) ? "Beer" : "Juice"
 ```
 
-### Character Access (1-based indexing)
+### Compound Assignment
 
 ```4d
-$text:="Hello World"
-
-// Single character
-$firstChar:=$text[[1]]            // "H" (1-based!)
-$lastChar:=$text[[Length($text)]] // "d"
-
-// Substring
-$substring:=$text[[7; 5]]  // "World" (position 7, length 5)
+$x+=5   $x-=3   $x*=2   $x/=4       // arithmetic
+$t+=" World"                          // text append
+$t*=2                                 // text repeat
 ```
 
-### Wildcard Matching
+### String Operators
 
 ```4d
-// Starts with
-$matches:=("Smith" = "S@")     // True
-
-// Ends with
-$matches:=("Johnson" = "@son") // True
-
-// Contains
-$matches:=("Hello" = "@ell@")  // True
-```
-
-### Case-Insensitive by Default
-
-```4d
-$match:=("Hello" = "HELLO")    // True
-$match:=("hello" = "HELLO")    // True
-```
-
----
-
-## Operators & Logic
-
-### Comparison Operators
-
-```4d
-// Basic comparisons
-$equal:=($a = $b)       // Equal
-$notEqual:=($a # $b)    // Not equal
-$different:=($a != $b)  // Alternative not equal
-
-// Relational
-$less:=($a < $b)
-$greater:=($a > $b)
-$lessEqual:=($a <= $b)
-$greaterEqual:=($a >= $b)
-```
-
-### Logical Operators
-
-```4d
-// Bitwise operators (ALWAYS evaluate both sides)
-$result:=($a = 1) && ($b = 2)    // Bitwise AND
-$result:=($a = 1) || ($b = 2)    // Bitwise OR
-
-// Short-circuit operators (v19 R4+, NOT in v19.2 LTS!)
-$result:=($a = 1) && ($b = 2)   // Short-circuit AND
-$result:=($a = 1) || ($b = 2)   // Short-circuit OR
-
-// Short-circuit usage for safe property access
-$user:=$session && $session.user           // Returns user if session exists
-$name:=$user && $user.name || "Anonymous"  // Chain with default
-```
-
-### Ternary Operator (v19 R4+, NOT in v19.2 LTS!)
-
-```4d
-$message:=($user.active) ? "Welcome!" : "Account disabled"
-$display:=($count = 1) ? "1 item" : (String($count) + " items")
-$category:=($age < 13) ? "child" : ($age < 20) ? "teen" : "adult"
+$full:="Hello"+" "+"World"            // concatenation with +
+$line:="-"*40                         // repetition with *
+$found:="Alpha Bravo" % "Bravo"      // keyword search (whole word), True
 ```
 
 ---
 
-## Control Flow
+## 4. Control Flow
 
-### Case Statement (Preferred over nested If/Else)
+### If / Else / End if
+
+```4d
+If ($score>=90)
+    $grade:="A"
+Else
+    $grade:="F"
+End if
+```
+
+### Case of / End case
+
+Only the first True case executes. Each case starts with `:(Boolean_Expression)`.
 
 ```4d
 Case of
-    : ($status = "new")
-        $color:="blue"
-    : ($status = "active")
-        $color:="green"
-    : ($status = "pending")
-        $color:="orange"
+    :(vResult=1)
+        ALERT("One.")
+    :(vResult=2)
+        ALERT("Two.")
     Else
-        $color:="gray"
+        ALERT("Other.")
 End case
 ```
 
-### Loop Variations
+### For / End for
 
 ```4d
-// Basic for loop
-For ($i; 1; 10)
-    // Process $i from 1 to 10
+For ($i;1;100)          // count up 1..100
+For ($i;100;1;-1)       // count down 100..1
+For ($i;0;10;2)         // step by 2: 0, 2, 4, 6, 8, 10
+```
+
+### For each / End for each
+
+```4d
+// Collection
+For each ($item;$col)
+    $total+=$item
+End for each
+
+// Object properties ($prop is Text: the property name)
+For each ($prop;$myObject)
+    $myObject[$prop]:=Uppercase($myObject[$prop])
+End for each
+
+// Entity selection
+For each ($emp;ds.Employees.query("country='US'"))
+    $emp.salary*=1.05
+    $emp.save()
+End for each
+
+// With While/Until conditions
+For each ($num;$colNum)While($total<100)
+    $total+=$num
+End for each
+```
+
+### While / End while, Repeat / Until
+
+```4d
+While ($i<10)            // condition tested BEFORE
+    $i+=1
+End while
+
+Repeat                   // executes at LEAST once
+    ADD RECORD([Customers])
+Until (OK=0)             // condition tested AFTER
+```
+
+### break, continue, return
+
+```4d
+For ($i;1;100)
+    If ($data{$i}="")
+        break              // exits innermost loop
+    End if
+    If ($data{$i}="#")
+        continue           // skips to next iteration
+    End if
 End for
 
-// For each (most powerful)
-For each ($item; $collection)
-    // Process each item
-End for each
-
-// For each with object
-For each ($key; $object)
-    $value:=$object[$key]
-End for each
-
-// With conditions
-For each ($item; $collection) Until ($item.stop) While ($item.valid)
-    // Process with exit conditions
-End for each
+// return exits the method/function, optionally with a value
+return $x*2
 ```
 
 ---
 
-## Object & Collection Syntax
+## 5. Methods and Functions
 
-### Object Literals
+### #DECLARE (project methods)
+
+Must be the first line of code. Declares parameters and return value.
 
 ```4d
-// Modern literal syntax (v20+, NOT in v19.2!)
-$user:={
-    name: "John Doe",
-    age: 30,
-    preferences: {theme: "dark"}
-}
-
-// Traditional syntax (works in all versions including v19.2)
-$user:=New object("name"; "John Doe"; "age"; 30)
-$user:=New object(\
-"name"; "John Doe"; \
-"age"; 30; \
-"preferences"; New object("theme"; "dark"))
+#DECLARE ($price : Real; $rate : Real) -> $result : Real
+$result:=$price*$rate
 ```
 
-### Collection Literals
+Alternative return style (`: type` + `return`):
 
 ```4d
-// Literal syntax (v20+, NOT in v19.2!)
-$colors:=["red", "green", "blue"]
-$numbers:=[1, 2, 3, 4, 5]
-
-// Traditional (works in v19.2)
-$colors:=New collection("red"; "green"; "blue")
-$numbers:=New collection(1; 2; 3; 4; 5)
+#DECLARE ($value : Integer) : Integer
+return $value*2
 ```
 
-### Property Access
+### Class Constructor and Functions
 
 ```4d
-// Dot notation (preferred)
-$name:=$user.name
-$theme:=$user.preferences.theme
+// Class: Person
+property firstName; lastName : Text
+property age : Integer
 
-// Bracket notation (for dynamic keys or keys with spaces)
-$value:=$user["property with spaces"]
-$dynamic:=$user[$keyVariable]
+Class constructor($firstname : Text; $lastname : Text; $age : Integer)
+    This.firstName:=$firstname
+    This.lastName:=$lastname
+    This.age:=$age
 
-// Safe access with short-circuit (v19 R4+)
-$email:=$user && $user.contact && $user.contact.email
+Function fullName() -> $result : Text
+    $result:=This.firstName+" "+This.lastName
+
+Function greet() : Text
+    return "Hello, "+This.fullName()
+
+// Computed property
+Function get fullName() -> $result : Text
+    $result:=This.firstName+" "+This.lastName
+
+Function set fullName($value : Text)
+    $p:=Position(" ";$value)
+    This.firstName:=Substring($value;1;$p-1)
+    This.lastName:=Substring($value;$p+1)
 ```
 
----
-
-## Critical Mistakes to Avoid
-
-### 1. Assignment vs Comparison (Again, because it's critical!)
+### Inheritance
 
 ```4d
-// WRONG: This compares, returns True/False
-If ($name = Request("Enter name"))
+// Class: Square
+Class extends Polygon
 
-// CORRECT: Assign first, then compare
-$name:=Request("Enter name")
-If ($name # "")
+Class constructor($side : Integer)
+    Super($side;$side)
+    This.name:="Square"
 ```
 
-### 2. Case Sensitivity Rules
+### Usage
 
 ```4d
-// Variable names: case-INSENSITIVE
-$MyVariable:="test"
-$myvariable:="changed"  // Same variable! Now = "changed"
-
-// Object properties: case-SENSITIVE
-$obj.Name:="John"    // Different from $obj.name
-$obj.name:="Jane"    // These are TWO different properties!
-```
-
-### 3. Indexing Differences
-
-```4d
-// Strings: 1-based
-$char:=$text[[1]]    // First character
-
-// Arrays: 1-based with special element zero
-$array{0}:="Init"    // Special element zero
-$array{1}:="First"   // First actual element
-
-// Collections: 0-based (like most languages)
-$collection[0]:="First"  // First element
-```
-
-### 4. Multi-line Continuation
-
-```4d
-// WRONG: Missing backslashes
-$result:=ds.Users.query("name = :1 AND
-email = :2";
-$name; $email)
-
-// CORRECT: With backslashes
-$result:=ds.Users.query("name = :1 AND \
-email = :2"; \
-$name; $email)
-```
-
-### 5. Decimal Separator
-
-```4d
-// ALWAYS use period, regardless of system locale
-$price:=19.99    // Correct
-$price:=19,99    // WRONG - treated as two separate numbers!
+var $p : cs.Person
+$p:=cs.Person.new("John";"Doe";30)
+$hello:=$p.greet()  // "Hello, John Doe"
 ```
 
 ---
 
-## Type Conversion
+## 6. String Operations
+
+### Character Access -- 1-based, double brackets `[[ ]]`
 
 ```4d
-// Explicit conversions
-$text:=String($number)              // Number to string
-$number:=Num($text)                 // String to number
-$bool:=Bool($value)                 // Any type to boolean
+$text:="Hello"
+$first:=$text[[1]]      // "H"
+$text[[1]]:="J"          // $text is now "Jello"
+```
 
-// Automatic coercion in comparisons
-$equal:=("123" = 123)               // True - automatic conversion
+### Comparison Behavior
+
+- `=` is **case-insensitive** and **diacritics-insensitive**: `"n"="N"` True, `"n"="ñ"` True
+- `@` wildcard on the right side: `"abcdef"="abc@"` is True
+- For case-sensitive check, compare character codes: `Character code("A")#Character code("a")`
+
+```4d
+("hello"="HELLO")  // True (case-insensitive)
+("abc"="abc@")      // True (wildcard)
 ```
 
 ---
 
-## Path & File System
+## 7. Multi-line Statements
+
+Backslash `\` at end of line continues to the next.
 
 ```4d
-// 4D path constants
-$projectPath:=Get 4D folder(Database folder)
-$dataPath:=Get 4D folder(Data folder)
+$result:=String("hello"+\
+    " world"+\
+    "!")
 
-// Path construction
-$filePath:=$projectPath + "Resources" + Folder separator + "config.json"
-
-// Modern path objects (recommended)
-$folder:=Folder("/PACKAGE/Resources")
-$file:=$folder.file("config.json")
+#DECLARE ($url : Text; $header : Text; \
+    $user : Text; $password : Text) \
+    -> $ok : Boolean
 ```
 
 ---
 
-## Quick Syntax Reference
+## 8. Comments
 
-| Syntax | Meaning | Example |
-|--------|---------|---------|
-| `:=` | Assignment | `$var:=value` |
-| `=` | Comparison | `If ($var = value)` |
-| `#` | Not equal | `If ($var # value)` |
-| `*` | String repetition | `"*" * 10` → `"**********"` |
-| `[[n]]` | Character at position n (1-based) | `$text[[1]]` |
-| `\` | Multi-line continuation | End line with `\` |
-| `&&`, `\|\|` | Short-circuit (v19 R4+) | `$value \|\| "default"` |
-| `? :` | Ternary (v19 R4+) | `$x ? "yes" : "no"` |
+```4d
+// Single-line comment
+/* Multi-line comment block */
+For /* inline comment */ ($i;1;10)
+    /* Nested /* blocks */ allowed */
+End for
+```
 
 ---
 
-## Best Practices
+## 9. Formulas
 
-1. **Always use `:=` for assignment, `=` for comparison**
-2. **Use Case statements over nested If/Else** for readability
-3. **Use short-circuit operators for safe property access** (if available in your version)
-4. **Remember 1-based indexing for strings and arrays, 0-based for collections**
-5. **Use backslashes for multi-line statements** to keep code readable
-6. **Be aware of case-sensitivity in object properties** (but not variables)
-7. **Always use period for decimal separator** regardless of locale
-8. **Use New object/New collection in v19.2**, object/collection literals in v20+
+`Formula` wraps a method/expression into a callable `4D.Function` object. `Formula from string` builds one dynamically.
+
+```4d
+var $f : 4D.Function
+$f:=Formula(ALERT("Hello!"))
+$f.call()  // displays "Hello!"
+
+// Store in an object -- This refers to the object
+$obj:=New object("name";"World")
+$obj.greet:=Formula(ALERT("Hi "+This.name))
+$obj.greet()  // displays "Hi World"
+
+// From string (dynamic)
+$formula:=Formula from string("$1 * $2")
+$result:=$formula.call(Null;6;7)  // 42
+```
 
 ---
 
-## Version-Specific Notes
+## 10. Go Deeper
 
-**4D v19.2 LTS:**
-- No short-circuit operators (`&&`, `||`)
-- No ternary operator (`? :`)
-- No object/collection literals (`{}`, `[]`)
-- Use `New object` and `New collection` instead
-
-**4D v19 R4+:**
-- Short-circuit operators available
-- Ternary operator available
-- Still use `New object`/`New collection` (literals in v20+)
-
-**4D v20+:**
-- All modern syntax available
-- Object literals `{}` and collection literals `[]`
-- Can mix traditional and modern syntax
+| Topic | File |
+|-------|------|
+| Variables & types | `docs/Concepts/variables.md` |
+| Operators (full tables) | `docs/Concepts/operators.md` |
+| Control flow | `docs/Concepts/flow-control.md` |
+| Methods | `docs/Concepts/methods.md` |
+| Parameters & #DECLARE | `docs/Concepts/parameters.md` |
+| Classes | `docs/Concepts/classes.md` |
+| String type & operators | `docs/Concepts/dt_string.md` |
+| Boolean & logical ops | `docs/Concepts/dt_boolean.md` |
+| Identifiers & naming | `docs/Concepts/identifiers.md` |
+| Shared objects | `docs/Concepts/shared.md` |
+| Quick tour (syntax) | `docs/Concepts/quick-tour.md` |

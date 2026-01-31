@@ -1,41 +1,31 @@
-# Local Conventions Directory
+# Local Conventions
 
-This directory is **gitignored** and used for project-specific or client-specific conventions that should not be published with the base skill.
+This directory contains project-specific or company-specific conventions that override or extend the base skill.
 
-## Purpose
+Files in this directory are gitignored and not distributed with the skill.
 
-The `local/` folder allows you to extend the 4D skill with internal conventions without modifying the core skill files. The skill will automatically reference files in this directory if they exist.
+## How to Use
 
-## How It Works
+Create markdown files here with your conventions:
 
-1. The main skill files reference the `local/` folder
-2. If files exist here, they provide additional context to Claude
-3. The folder is gitignored, so your private conventions stay private
-4. When publishing the skill, the local folder is excluded
+```bash
+# Example
+cat > CONVENTIONS.md << 'EOF'
+## Our 4D Standards
+
+### Naming
+- Methods: Category_Action (e.g., User_Create, Invoice_Validate)
+- Classes: PascalCase (e.g., cs.UserManager)
+
+### Documentation
+- All comments in French
+- Use XML documentation tags
+EOF
+```
 
 ## What to Put Here
 
-- **Documentation standards**: Company or project-specific documentation formats
-- **Naming conventions**: Internal naming patterns and prefixes
-- **Database schemas**: Table names, relationships, field descriptions
-- **Code organization rules**: Where to put business logic, API structure
-- **Internal libraries**: References to internal 4D components or libraries
-- **Client-specific patterns**: Any client or project-specific best practices
-
-## Example Files
-
-You can create any markdown files here. Common examples:
-
-- `CONVENTIONS.md` - Your main conventions document
-- `DATABASE-SCHEMA.md` - Database structure reference
-- `NAMING-STANDARDS.md` - Naming patterns and prefixes
-- `ARCHITECTURE.md` - Project architecture guidelines
-
-The skill will check for files in this folder and load them when referenced.
-
-## For Publishers
-
-When publishing this skill publicly:
-1. The `.gitignore` excludes the `local/` folder
-2. Only the README.md template is shared
-3. Users create their own local conventions as needed
+- Company-specific naming conventions
+- Project-specific database schema documentation
+- Internal documentation standards
+- Version override (e.g., if your project uses 4D v19.2 instead of v21)

@@ -1,434 +1,545 @@
-# 4D Data Types
+# Data Types Reference
 
-4D's data type system with unique characteristics, type conversion, and best practices.
+> Curated reference for 4D v21. For full documentation, see pointed files in docs/.
 
 ## Table of Contents
-- Core Data Types (Text, Numbers, Boolean, Date, Time)
-- Collections (0-based indexing)
-- Objects (Key-value pairs)
-- Advanced Types (Variant, Pointer, Blob)
-- Type Conversion & Validation
-- Common Type Mistakes
-- Performance Considerations
+
+- [Scalar Types Overview](#scalar-types-overview)
+- [Text](#text)
+- [Numeric Types](#numeric-types)
+- [Boolean](#boolean)
+- [Date](#date)
+- [Time](#time)
+- [Object](#object)
+- [Collection](#collection)
+- [Null and Undefined](#null-and-undefined)
+- [Type Checking](#type-checking)
+- [Type Conversion](#type-conversion)
+- [Variant](#variant)
+- [Pointer](#pointer)
+- [Picture and Blob](#picture-and-blob)
+- [Go Deeper](#go-deeper)
 
 ---
 
-## Core Data Types
+## Scalar Types Overview
 
-### Text (0 to 2GB Unicode)
+| Type | `var` keyword | Size / Range | Default Value |
+|------|---------------|-------------|---------------|
+| Text | `Text` | 0 to 2 GB | `""` |
+| Integer | `Integer` | -2^31 to (2^31)-1 (4 bytes) | `0` |
+| Real | `Real` | +/-1.7e+/-308 (13 significant digits) | `0` |
+| Boolean | `Boolean` | True / False | `False` |
+| Date | `Date` | !0001-01-01! to !9999-12-31! | `!00-00-00!` |
+| Time | `Time` | 00:00:00 to 596000:00:00 | `?00:00:00?` |
+| Object | `Object` | -- | `null` |
+| Collection | `Collection` | -- | `null` |
+| Picture | `Picture` | -- | empty (size=0) |
+| Blob | `Blob` / `4D.Blob` | up to 2 GB (scalar) | empty (size=0) |
+| Pointer | `Pointer` | -- | `Nil` |
+| Variant | `Variant` | any of the above | `undefined` |
+
+---
+
+## Text
+
+Declaration and basic usage:
 
 ```4d
-var $text : Text
-$text:="Hello World"
+var $name : Text
+$name:="Hello, World!"
 
-// Character access (1-based indexing!)
-$firstChar:=$text[[1]]                    // "H"
-$substring:=$text[[7; 5]]                 // "World" (pos 7, length 5)
+// Concatenation with +
+$full:="Hello" + " " + "World"  // "Hello World"
 
-// Case-insensitive comparisons by default
-$match:=("Hello" = "HELLO")               // True
-$match:=("Hello" = "hello")               // True
-
-// Wildcard matching
-$startsWith:=("Hello" = "H@")             // True
-$contains:=("Hello" = "@ell@")            // True
-
-// String repetition (unique to 4D)
-$repeated:="Ha" * 3                       // "HaHaHa"
+// Repetition with *
+$repeat:="ab" * 3  // "ababab"
 ```
 
-### Numbers
-
-#### Integer (-2,147,483,648 to 2,147,483,647)
+**Character access with `[[]]` -- 1-based indexing:**
 
 ```4d
-var $int : Integer
-$int:=42
-$int:=2147483647                          // Maximum value
-$overflow:=2147483647 + 1                 // Wraps to -2147483648
+$text:="Hello"
+$first:=$text[[1]]  // "H"
+$text[[1]]:=Uppercase($text[[1]])  // capitalize first char
 
-// Integer operations
-$quotient:=$int1 \ $int2                  // Integer division (truncated)
-$remainder:=$int1 % $int2                 // Modulo
+// Last character
+$last:=$text[[Length($text)]]
 ```
 
-#### Real (64-bit floating point)
+**Key string commands:**
 
 ```4d
-var $real : Real
-$real:=3.14159
-$real:=1.23e5                             // Scientific: 123,000
-$real:=1.23e-5                            // Scientific: 0.0000123
-
-// CRITICAL: Always use period as decimal separator
-$price:=19.99                             // Correct
-$price:=19,99                             // WRONG - treated as two numbers!
-
-// Precision considerations
-$result:=0.1 + 0.2                       // May not exactly equal 0.3
-$safe:=(Abs($result - 0.3) < 0.0001)     // Safe comparison with tolerance
+$len:=Length("Hello")          // 5
+$pos:=Position("lo"; "Hello")  // 4
+$sub:=Substring("Hello"; 2; 3) // "ell" (start; count)
+$up:=Uppercase("hello")        // "HELLO"
+$low:=Lowercase("HELLO")       // "hello"
 ```
 
-### Boolean
+**Wildcard `@` -- matches any number of characters (right operand only):**
 
 ```4d
-var $bool : Boolean
-$bool:=True                               // Case-sensitive
-$bool:=False                              // Case-sensitive
-
-// Truthy/Falsy conversion
-$truthy:=Bool("")                         // False
-$truthy:=Bool("text")                     // True
-$truthy:=Bool(0)                          // False
-$truthy:=Bool(42)                         // True
-$truthy:=Bool(Null)                       // False
+"abcdef" = "abc@"    // True
+"abc@" = "abcdef"    // False -- @ is literal on left side
 ```
 
-### Date (January 1, 100 to December 31, 32,767)
+**Comparisons are case-insensitive by default.** Use `Character code()` to compare case:
 
 ```4d
-var $date : Date
-$date:=Current date
-$date:=!2024-12-25!                       // Literal syntax YYYY-MM-DD
-$date:=!00-00-00!                         // Null date
-
-// Date arithmetic
-$future:=$date + 30                       // Add 30 days
-$past:=$date - 7                          // Subtract 7 days
-$daysDiff:=$date2 - $date1                // Difference in days
-
-// Date formatting
-$formatted:=String($date; System date short)
-$formatted:=String($date; ISO date GMT)  // ISO format
+"a" = "A"  // True
+Character code("A") = Character code("a")  // False (65 vs 97)
 ```
 
-### Time (00:00:00 to 596,000:00:00)
+---
+
+## Numeric Types
+
+Two main numeric types: **Integer** (4-byte long, range -2^31 to 2^31-1) and **Real** (floating point, 13 significant digits).
 
 ```4d
-var $time : Time
-$time:=Current time
-$time:=?14:30:00?                         // Literal syntax HH:MM:SS
-$time:=?00:00:00?                         // Midnight
+var $count : Integer
+var $price : Real
+$count:=42
+$price:=19.99
+```
 
-// Time as seconds since midnight
-$seconds:=$time                           // Get seconds value
-$timeFromSeconds:=Time(14*3600 + 30*60)   // Create time from seconds
+> **CRITICAL GOTCHA -- Decimal separator is ALWAYS period:**
+> Regardless of system locale, 4D always uses `.` as decimal separator.
+>
+> ```4d
+> $price:=19.99    // CORRECT
+> $price:=19,99    // WRONG -- treated as two separate numbers (19 and 99)!
+> ```
+
+> **CRITICAL GOTCHA -- Numeric object properties are ALWAYS Real:**
+> `Value type()` on a numerical object property **always** returns `Is real`, never `Is longint`, even for integer-looking values.
+>
+> ```4d
+> $obj:=New object("count"; 5)
+> Value type($obj.count)  // Is real, NOT Is longint
+>
+> // This type check will NEVER be true for object properties:
+> If (Value type($obj.count)=Is longint)  // NEVER true!
+> End if
+>
+> // CORRECT approach:
+> If (Value type($obj.count)=Is real)
+>     $intValue:=Num($obj.count)
+> End if
+> ```
+
+**Operators:** `+`, `-`, `*`, `/` (real division), `\` (integer division), `%` (modulo), `^` (exponent).
+
+**IMPORTANT -- Left-to-right precedence (no algebraic order):**
+
+```4d
+3+4*5    // 35, NOT 23 -- evaluated as (3+4)*5
+3+(4*5)  // 23 -- use parentheses to enforce order
+```
+
+---
+
+## Boolean
+
+```4d
+var $flag : Boolean  // default: False
+$flag:=True
+
+// Logical operators
+$and:=($a>0) & ($b>0)    // AND
+$or:=($a>0) | ($b>0)     // OR
+$not:=Not($flag)          // NOT
+
+// Short-circuit operators (v20+)
+$and:=($a>0) && ($b>0)   // stops if first is False
+$or:=($a>0) || ($b>0)    // stops if first is True
+
+// Expression evaluation
+$isAdult:=($age>=18)  // Boolean result from comparison
+```
+
+---
+
+## Date
+
+Literals use ISO format with `!` delimiters:
+
+```4d
+var $today : Date
+$today:=Current date
+
+// Date literal: !YYYY-MM-DD!
+var $birthday : Date:=!1990-06-15!
+
+// Null date
+var $empty : Date:=!00-00-00!
+
+// Date arithmetic: add/subtract days with + and -
+$tomorrow:=Current date+1
+$lastWeek:=Current date-7
+
+// Difference between dates returns number of days
+$days:=!2025-12-31!-!2025-01-01!  // 364
+
+// Add to date command for month/year arithmetic
+$nextMonth:=Add to date(Current date; 0; 1; 0)  // add 1 month
+$nextYear:=Add to date(Current date; 1; 0; 0)   // add 1 year
+
+// Extract parts
+$y:=Year of(Current date)
+$m:=Month of(Current date)
+$d:=Day of(Current date)
+```
+
+---
+
+## Time
+
+Literals use `?` delimiters, 24-hour format. Internally stored as seconds since midnight.
+
+```4d
+var $now : Time
+$now:=Current time
+
+// Time literal: ?HH:MM:SS?
+var $alarm : Time:=?08:30:00?
+
+// Null time
+var $empty : Time:=?00:00:00?
 
 // Time arithmetic
-$later:=$time + 3600                      // Add 1 hour (3600 seconds)
-$duration:=$endTime - $startTime          // Duration in seconds
+$later:=?09:00:00?+?01:30:00?    // ?10:30:00?
+$diff:=?17:00:00?-?09:00:00?     // ?08:00:00?
+
+// Time as number (seconds since midnight)
+$seconds:=?01:00:00?+0  // 3600
+
+// Wrap around midnight with modulo
+$t:=(?23:00:00?+?02:30:00?) % ?24:00:00?  // ?01:30:00?
+
+// Convert seconds back to time
+$asTime:=Time(Current time+3600)  // one hour from now
 ```
 
 ---
 
-## Collections (0-based indexing)
+## Object
+
+JSON-based key/value structure. Property names are **case-SENSITIVE** (unlike variable names which are case-insensitive).
 
 ```4d
-var $collection : Collection
+// Instantiation
+var $obj : Object
+$obj:=New object()               // empty object
+$obj:=New object("name"; "Alice"; "age"; 30)  // prefilled
+$obj:={}                          // literal syntax
+$obj:={name: "Alice"; age: 30}    // literal prefilled
 
-// Creation (v20+ uses [], v19.2 uses New collection)
-$collection:=New collection("a"; "b"; 1; 2)
-$collection:=["a"; "b"; 1; 2]             // v20+ only
+// Property access -- dot notation
+$obj.city:="Paris"
+$name:=$obj.name                  // "Alice"
 
-// Access (0-based!)
-$first:=$collection[0]                    // First element
-$last:=$collection[$collection.length-1]  // Last element
+// Property access -- bracket notation (dynamic keys)
+$key:="name"
+$val:=$obj[$key]                  // "Alice"
 
-// Methods
-$collection.push("new")                     // Add to end
-$item:=$collection.pop()                  // Remove last
-$collection.insert(1; "inserted")          // Insert at index
-$collection.remove(0; 1)                   // Remove item at index
+// Nested objects
+$obj.address:={street: "Main St"; zip: "75001"}
+$zip:=$obj.address.zip            // "75001"
+
+// Set property to Null
+$obj.address.zip:=Null
+```
+
+> **Object property names are case-SENSITIVE:**
+> `$obj.Name` and `$obj.name` are **different** properties.
+
+**Key object commands:**
+
+```4d
+$keys:=OB Keys($obj)             // collection of property names
+$vals:=OB Values($obj)           // collection of property values
+$has:=OB Is defined($obj; "name") // True if property exists (even if Null)
+
+// Remove a property
+OB REMOVE($obj; "age")
+
+// Count properties
+$count:=OB Count($obj)
+```
+
+---
+
+## Collection
+
+Ordered list of mixed-type values. **0-based indexing** (contrast with arrays and string `[[]]` which are 1-based).
+
+```4d
+// Instantiation
+var $col : Collection
+$col:=New collection()                     // empty
+$col:=New collection("a"; "b"; 1; 42; {})  // prefilled
+$col:=[]                                    // literal empty
+$col:=[1; 2; 3; 4; 5]                      // literal prefilled
+
+// Access elements -- 0-based
+$first:=$col[0]     // 1
+$second:=$col[1]    // 2
+
+// Auto-resize on assignment beyond bounds
+$col[10]:="Z"  // elements [5]..[9] become null
+
+// Length
+$size:=$col.length
+```
+
+**Key collection methods:**
+
+```4d
+// Add elements
+$col.push(10; 20)         // append to end
+$col.unshift("first")     // prepend to start
+
+// Remove elements
+$col.pop()                // remove last, returns it
+$col.shift()              // remove first, returns it
+$col.remove(2)            // remove element at index 2
+
+// Query a collection of objects
+$users:=New collection()
+$users.push({name: "Alice"; age: 30})
+$users.push({name: "Bob"; age: 25})
+$found:=$users.query("age > 26")           // [{name:"Alice",age:30}]
 
 // Functional methods
-$filtered:=$collection.filter(Formula($1.active = True))
-$mapped:=$collection.map(Formula($1.name))
-$found:=$collection.find(Formula($1.id = 123))
+$names:=$users.map(Formula($1.value.name))
+$totalAge:=$users.reduce(Formula($1.accumulator+$1.value.age); 0)  // 55
+$sorted:=$users.orderBy("age desc")
+
+// Other useful methods
+$col2:=$col.copy()            // deep copy
+$col.sort()                   // sort in place
+$col.reverse()                // reverse in place
+$joined:=$col.join("; ")      // "1; 2; 3..."
+$idx:=$col.indexOf(42)        // find element
+$has:=$col.includes(42)       // boolean check
+$unique:=$col.distinct()      // remove duplicates
+```
+
+> **Indexing contrast:** Collections are 0-based. Arrays (`ARRAY` commands) and string `[[]]` character access are 1-based.
+
+---
+
+## Null and Undefined
+
+**Null** -- explicit "no value". **Undefined** -- variable not yet initialized or property does not exist.
+
+```4d
+var $obj : Object
+$obj:=New object("name"; "Alice")
+$obj.children:=Null
+
+// Null checks
+($obj.children=Null)   // True -- property exists but is Null
+($obj.parent=Null)     // True -- undefined also equals Null!
+
+// Undefined checks
+Undefined($obj.name)     // False -- property exists
+Undefined($obj.children) // False -- Null is not undefined
+Undefined($obj.parent)   // True  -- property does not exist
+```
+
+**Key behaviors:**
+
+- `Null = Undefined` evaluates to **True** (they are equal for `=` / `#` comparisons).
+- `>`, `<`, `>=`, `<=` with Null values returns an **error**.
+- Assigning undefined to an existing object property **clears** it to its type's default.
+- Unassigned `Object` and `Collection` variables default to `null`.
+- Unassigned `Variant` variables default to `undefined`.
+
+```4d
+// Safe access pattern -- cast to avoid errors on undefined
+$myString:=Lowercase(String($obj.a.b))  // returns "" if undefined, no error
 ```
 
 ---
 
-## Objects (Key-value pairs)
+## Type Checking
 
 ```4d
-var $object : Object
+// Value type -- works on any expression, returns the VALUE's type
+$vt:=Value type($obj.count)  // Is real (1), Is text (2), Is boolean (6), etc.
+$vt:=Value type($myVar)
 
-// Creation (v20+ uses {}, v19.2 uses New object)
-$object:=New object("name"; "John"; "age"; 30)
-$object:={name: "John", age: 30}          // v20+ only
+// Type -- returns the VARIABLE's declared type
+$t:=Type($myVar)  // e.g., Is text, Is variant, Is longint
 
-// Property access
-$name:=$object.name                       // Dot notation
-$name:=$object["name"]                    // Bracket notation
-$dynamic:=$object[$propertyName]          // Dynamic property
+// Key difference:
+var $v : Variant
+$v:="hello"
+Type($v)        // Is variant (12)
+Value type($v)  // Is text (2)
 
-// CRITICAL: Properties are case-sensitive!
-$object.Name:="John"                      // Different from $object.name
-$object.name:="Jane"                      // These are different properties!
+// Object instance check
+var $blob : 4D.Blob
+$is:=OB Instance of($blob; 4D.Blob)  // True
 
-// Safe property access (v19 R4+)
-$email:=$object.contact && $object.contact.email
-$theme:=$object.preferences ? $object.preferences.theme : "default"
+// Common type constants:
+// Is real = 1, Is text = 2, Is date = 4, Is boolean = 6,
+// Is longint = 9, Is object = 38, Is collection = 42, Is variant = 12
 ```
 
 ---
 
-## Advanced Types
-
-### Variant (Any type except arrays)
+## Type Conversion
 
 ```4d
-var $variant : Variant
-$variant:="Text"                          // Holds Text
-$variant:=42                              // Now holds Integer
-$variant:=Current date                    // Now holds Date
-$variant:=Undefined                       // Default value
+// To String
+$s:=String(42)                  // "42"
+$s:=String(Current date)        // date as string (system format)
+$s:=String(?13:30:00?)          // "13:30:00"
 
-// Type checking
-$type:=Type($variant)
+// To Number
+$n:=Num("42.5")                 // 42.5
+$n:=Num(True)                   // 1
+$n:=Num(False)                  // 0
+
+// To Boolean
+$b:=Bool(1)                     // True
+$b:=Bool(0)                     // False
+
+// To Date (from ISO string)
+$d:=Date("2025-01-15")          // !2025-01-15!
+
+// To Time (from string)
+$t:=Time("13:30:00")            // ?13:30:00?
+
+// JSON parsing (string to object/collection)
+$obj:=JSON Parse("{\"name\":\"Alice\"}")
+$col:=JSON Parse("[1,2,3]")
+
+// Object/collection to string
+$json:=JSON Stringify($obj)
+```
+
+---
+
+## Variant
+
+A variable type (not a data type) that can hold any value type. Use when the type is not known at design time.
+
+```4d
+var $v : Variant              // default: undefined
+var $v2                       // type omitted = Variant
+
+$v:="hello"                   // now holds Text
+$v:=42                        // now holds Real
+$v:=New object("a"; 1)       // now holds Object
+
+// Type check the current value
 Case of
-    : ($type = Is text)
-        // Handle as text
-    : ($type = Is longint)
-        // Handle as integer
-    : ($type = Is object)
-        // Handle as object
+    :(Value type($v)=Is text)
+        // handle text
+    :(Value type($v)=Is real)
+        // handle number
+    :(Value type($v)=Is object)
+        // handle object
 End case
 ```
 
-### Pointer
+> When data type is known, prefer explicit types over Variant. Explicit types give better performance, clearer code, and help the compiler catch bugs.
+
+---
+
+## Pointer
+
+A reference to another variable, field, table, or array. Created with `->`, dereferenced with `->` after the pointer.
 
 ```4d
+// Create a pointer
 var $ptr : Pointer
-var $name : Text
-$name:="John"
+var $name : Text:="Alice"
+$ptr:=->$name
 
-$ptr:=->$name                             // Create pointer to variable
-$value:=$ptr->                            // Dereference (gets "John")
-$ptr->:="Jane"                            // Set value (changes $name)
+// Dereference -- read
+ALERT($ptr->)         // "Alice"
 
-// Array pointers
-ARRAY TEXT($array; 5)
-$arrayPtr:=->$array
-$arrayPtr->{1}:="First"                   // Set array element
+// Dereference -- write
+$ptr->:="Bob"         // $name is now "Bob"
+
+// Pointer to field
+$fieldPtr:=->[Employees]LastName
+$fieldPtr->:="Smith"
+
+// Null pointer check
+var $p : Pointer       // default: Nil
+If ($p#Null)
+    $p->:="safe"       // only dereference if not Nil
+End if
+
+// Passing by reference via pointer
+// Method signature: #DECLARE($ptr : Pointer)
+myMethod(->$myVar)
 ```
 
-### Blob (Binary data)
+**Use cases:** generic methods operating on different fields/variables, passing large data by reference, dynamic field access.
+
+> Objects are always passed by reference natively, so pointers are rarely needed for objects.
+
+---
+
+## Picture and Blob
+
+### Picture
 
 ```4d
-var $blob : Blob
-SET BLOB SIZE($blob; 1000)                  // Allocate 1000 bytes
-$size:=BLOB size($blob)                   // Get size
+var $pic : Picture
+READ PICTURE FILE("photo.png"; $pic)
 
-// Byte access
-$byte:=$blob{100}                         // Read byte at position 100
-$blob{100}:=65                            // Write byte (ASCII 'A')
+// Operators: + (horizontal concat), / (vertical concat), * (resize)
+$resized:=$pic*0.5           // 50% size
+$wider:=$pic*+2              // double width
+$taller:=$pic*|2             // double height
+```
 
-// File operations
-DOCUMENT TO BLOB("file.pdf"; $blob)         // Load file
-BLOB TO DOCUMENT("output.pdf"; $blob)       // Save file
+### Blob
+
+Binary data container. Two types: scalar `Blob` (alterable, up to 2 GB) and `4D.Blob` (immutable object, shareable).
+
+```4d
+var $myBlob : Blob
+SET BLOB SIZE($myBlob; 1024)
+
+// Byte access -- 0-based with {}
+$myBlob{0}:=255
+
+// 4D.Blob (object blob -- immutable, shareable in objects/collections)
+var $objBlob : 4D.Blob
+$objBlob:=4D.Blob.new()
+
+// Check type
+OB Instance of($objBlob; 4D.Blob)  // True
 ```
 
 ---
 
-## Type Conversion & Validation
+## Go Deeper
 
-### Explicit Conversion
+For full documentation on each type, consult these files in docs/:
 
-```4d
-// To Text
-$text:=String($number)
-$text:=String($date; System date short)
-$text:=String($time; HH MM SS)
-$text:=String($boolean)                   // "True" or "False"
-
-// To Number
-$number:=Num($text)                       // Text to number
-$int:=Int($real)                          // Real to integer (truncated)
-$rounded:=Round($real; 2)                 // Rounded to 2 decimals
-
-// To Boolean
-$bool:=Bool($value)                       // Any type to boolean
-$bool:=($value # Null) && ($value # "")   // Custom boolean logic
-
-// To Date/Time
-$date:=Date($text)                        // Text to date
-$time:=Time($text)                        // Text to time
-$time:=Time($seconds)                     // Seconds to time
-```
-
-### Safe Conversion with Defaults
-
-```4d
-// Safe string conversion
-Function safeString($value : Variant) -> $result : Text
-    $result:=($value # Null) ? String($value) : ""
-
-// Safe number conversion
-Function safeNumber($value : Variant) -> $result : Real
-    Case of
-        : (Type($value) = Is real) || (Type($value) = Is longint)
-            $result:=$value
-        : (Type($value) = Is text)
-            $result:=Num($value)
-        Else
-            $result:=0
-    End case
-```
-
-### Type Detection
-
-```4d
-// Type checking
-$type:=Type($variable)
-$isText:=(Type($variable) = Is text)
-$isNumber:=(Type($variable) = Is longint) || (Type($variable) = Is real)
-
-// Value type (for object properties and expressions)
-$vType:=Value type($obj.age)              // Always Is real for numerical obj properties
-
-// IMPORTANT: Numerical object properties are ALWAYS considered Real values
-// Value type() on a numerical object property returns Is real, never Is longint
-$obj:=New object("count"; 5)
-Value type($obj.count)                    // Is real (even though 5 looks like integer)
-
-// Null and undefined
-$isNull:=($value = Null)
-$isUndefined:=($value = Undefined)
-$isEmpty:=($value = Null) || ($value = Undefined) || ($value = "")
-
-// Value validation
-$isValidEmail:=Match regex("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$"; $email)
-$isPositive:=(Type($number) = Is real) && ($number > 0)
-```
-
----
-
-## Type Coercion in Operations
-
-### Automatic Coercion
-
-```4d
-// String/number comparison (automatic coercion)
-$textNum:="123"
-$number:=123
-$equal:=($textNum = $number)              // True - automatic coercion
-
-// Date operations
-$futureDate:=Current date + 30            // Add 30 days
-$duration:=$endTime - $startTime          // Time difference
-
-// String concatenation requires explicit conversion
-$message:="Value: " + String($number)    // Must convert number to string
-```
-
----
-
-## Common Type Mistakes
-
-### 1. String Concatenation
-
-```4d
-// WRONG: Trying to concatenate number directly
-$result:="Value: " + $number              // Error if $number not already text
-
-// CORRECT: Explicit conversion
-$result:="Value: " + String($number)
-```
-
-### 2. Date Arithmetic with Null
-
-```4d
-// WRONG: No null check
-$future:=$date + 30                       // Error if $date is !00-00-00!
-
-// CORRECT: Check for null date
-$future:=($date # !00-00-00!) ? ($date + 30) : !00-00-00!
-```
-
-### 3. Collection Bounds
-
-```4d
-// WRONG: No bounds checking
-$item:=$collection[5]                     // Error if collection has < 6 items
-
-// CORRECT: Bounds checking
-$item:=($collection.length > 5) ? $collection[5] : Null
-```
-
-### 4. Object Property Case
-
-```4d
-// These access DIFFERENT properties!
-$name:=$user.Name                         // Capital N
-$name:=$user.name                         // Lowercase n
-```
-
----
-
-## Performance Considerations
-
-### Memory Usage
-
-```4d
-// Text and blob can be large (up to 2GB)
-var $largeText : Text                       // Can grow to 2GB
-var $blob : Blob                           // Binary data
-
-// Clear when done
-$largeText:=""                           // Free memory
-SET BLOB SIZE($blob; 0)                    // Free blob memory
-```
-
-### Type-Specific Performance
-
-```4d
-// Collections vs arrays
-$collection:=New collection               // Dynamic, 0-based
-ARRAY TEXT($array; 1000)                   // Fixed size, all in memory, 1-based
-
-// Prefer collections for flexibility, arrays for performance-critical operations
-```
-
----
-
-## Best Practices
-
-1. **Always use period for decimals** regardless of system locale
-2. **Check for null dates** before arithmetic operations
-3. **Use explicit type conversion** for string operations
-4. **Be aware of case sensitivity** in object properties (but not variables)
-5. **Use safe conversion functions** with defaults
-6. **Check collection bounds** before access
-7. **Remember indexing differences**: strings/arrays (1-based), collections (0-based)
-8. **Use Try function** for safe operations (v20 R4+): `Try($risky.operation; defaultValue)`
-
----
-
-## Quick Type Reference
-
-| Type | Indexing | Case Sensitive | Range/Notes |
-|------|----------|----------------|-------------|
-| Text | 1-based | Comparisons: No, Properties: N/A | 0 to 2GB |
-| Integer | N/A | N/A | -2,147,483,648 to 2,147,483,647 |
-| Real | N/A | N/A | 64-bit floating point, use `.` for decimals |
-| Boolean | N/A | Yes (True/False) | True or False |
-| Date | N/A | N/A | !YYYY-MM-DD! format, arithmetic supported |
-| Time | N/A | N/A | ?HH:MM:SS? format, stored as seconds |
-| Collection | 0-based | N/A | Dynamic size, functional methods |
-| Object | N/A | **Yes** (properties) | Case-sensitive property names |
-| Array | 1-based (+ element 0) | N/A | Fixed size, performance-oriented |
-
----
-
-## Version-Specific Notes
-
-**4D v19.2 LTS:**
-- Use `New object` and `New collection` (no `{}` or `[]` literals)
-- No inline variable declaration with assignment
-- No `Try()` function for safe operations
-
-**4D v20+:**
-- Object literals `{}` and collection literals `[]` available
-- Inline declaration: `var $x:=value`
-- `Try()` function for safe operations: `Try($value; defaultValue)`
+- **Text:** `docs/Concepts/dt_string.md` -- escape sequences, wildcard `@`, keyword search `%`
+- **Numbers:** `docs/Concepts/dt_number.md` -- bitwise operators, real comparison epsilon
+- **Boolean:** `docs/Concepts/dt_boolean.md` -- truth tables, short-circuit operators
+- **Date:** `docs/Concepts/dt_date.md` -- date operators, system format notes
+- **Time:** `docs/Concepts/dt_time.md` -- time-as-number conversions, modulo wrapping
+- **Object:** `docs/Concepts/dt_object.md` -- shared objects, pointer access, resource management
+- **Collection:** `docs/Concepts/dt_collection.md` -- shared collections, literal syntax, propertyPath
+- **Collection API:** `docs/API/CollectionClass.md` -- all collection member functions
+- **Null/Undefined:** `docs/Concepts/dt_null_undefined.md` -- operator tables, edge cases
+- **Variant:** `docs/Concepts/dt_variant.md` -- variant vs regular type behavior
+- **Pointer:** `docs/Concepts/dt_pointer.md` -- pointers to tables, fields, arrays, methods
+- **Picture:** `docs/Concepts/dt_picture.md` -- codec IDs, picture operators
+- **Blob:** `docs/Concepts/dt_blob.md` -- scalar vs 4D.Blob, byte access
+- **Variables:** `docs/Concepts/variables.md` -- declaration syntax, local/process/interprocess scope
+- **Gotchas:** `references/manual-insights.md` -- real-world corrections on types, queries, and more

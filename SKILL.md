@@ -1,461 +1,308 @@
 ---
-name: 4d-development
-description: Comprehensive 4D development expert covering modern ORDA patterns, classic 4D methods, query syntax, data types, error handling, and forms. Use when working with 4D files (.4dm), 4D language questions, entity classes, ORDA queries, database operations, form development, or 4D-specific syntax issues. Includes version 19.2 LTS compatibility guidance.
+name: 4d-v21
+description: >
+  Comprehensive 4D v21 development expert with embedded official documentation.
+  Covers ORDA patterns, entity classes, data model classes, queries, classic
+  methods, data types, error handling, forms, events, web server, and REST API.
+  Use when working with 4D files (.4dm), 4D language questions, 4D project
+  structure, entity classes, ORDA queries, database operations, form development,
+  web server configuration, REST API usage, or any 4D-specific syntax issue.
+  Includes full official 4D v21 documentation for on-demand retrieval.
+  Triggers on: .4dm files, 4D code, ORDA, entity selection, dataclass, 4D query,
+  4D form, 4D web server, 4D REST, 4D command, 4D collection, 4D object.
 ---
 
-# 4D Development Expert
+# 4D Development Expert (v21)
 
-Expert guidance for 4D programming, covering modern ORDA patterns, classic methods, database queries, forms, and language-specific syntax.
+## Skill Version
+
+- **4D Version**: v21
+- **Skill Version**: 1.0
+- **Docs**: Full official 4D v21 documentation embedded in `docs/` (3,387 files)
+
+This skill targets **4D v21** specifically. Do not assume features from other versions exist unless verified in the embedded documentation.
+
+---
 
 ## How to Use This Skill
 
-This skill uses progressive disclosure - start here for quick guidance, then read specific reference files as needed. The references are organized by priority: language basics load first, specialized topics load on demand.
+**CRITICAL**: For any 4D task, ALWAYS prefer reading the embedded documentation files (`docs/`) over relying on training data. The `docs/` folder contains the authoritative 4D v21 reference.
 
-**Structure:**
-- This file: Quick decision guide and critical gotchas
-- `references/` folder: Detailed technical references loaded as needed
+**Workflow:**
+1. Check this file for critical rules and routing
+2. Read the relevant `references/` file for curated knowledge and patterns
+3. If more detail is needed, read the specific `docs/` file pointed to by the reference
+4. For edge cases, use grep to search across `docs/`
+5. Only fall back to training data if `docs/` doesn't cover the topic
+
+**Priority reading**: Always check `references/manual-insights.md` — it contains real-world corrections from code reviews that override documentation.
 
 ---
 
 ## Local Conventions
 
-**Important**: Before providing 4D guidance, check if a `local/` directory exists in this skill folder. If it does, read any markdown files inside it for project-specific or internal conventions.
+Before providing 4D guidance, check if a `local/` directory exists in this skill folder with project-specific conventions:
 
-The `local/` directory (gitignored) contains:
-- Internal documentation standards
-- Company-specific naming conventions
-- Database schemas and relationships
-- Client-specific patterns and requirements
-
-**To load local conventions:**
 ```bash
-# Check if local conventions exist
 ls local/*.md 2>/dev/null
-# If files exist, read them for additional context
 ```
 
-This separation allows the base skill to remain generic while supporting internal customizations.
+If files exist, read them first. The `local/` directory (gitignored) can contain:
+- Company-specific naming conventions and documentation standards
+- Project-specific database schemas
+- Version overrides (e.g., if project uses 4D v19.2 instead of v21)
 
 ---
 
-## Customizing This Skill
+## Critical Syntax Rules
 
-Two ways to add project-specific conventions:
+These are the most common sources of bugs in 4D code. Know them by heart.
 
-### Option 1: Local Folder (For Skill-Level Conventions)
-
-Create markdown files in the `local/` directory:
-
-```bash
-# Example: Create your conventions file
-cat > local/CONVENTIONS.md << 'EOF'
-## Our 4D Standards
-
-### Documentation
-- All comments in French
-- Use XML tags
-
-### Naming
-- Methods: Category_Action
-- Classes: PascalCase
-EOF
-```
-
-Use this for:
-- Conventions shared across multiple projects
-- Internal company standards
-- Reusable database schemas
-
-### Option 2: Project CLAUDE.md (For Project-Level Conventions)
-
-Add to your project's `.claude/CLAUDE.md`:
-
-```markdown
-## 4D Project Conventions
-[Project-specific rules here]
-```
-
-Use this for:
-- Single project conventions
-- Project-specific database schema
-- Temporary or experimental patterns
-
----
-
-## Critical Syntax Essentials
-
-These are the most common mistakes in 4D code. **Read these first** if you're new to 4D or debugging syntax errors.
-
-### 1. Assignment vs Comparison (CRITICAL)
+### 1. Assignment vs Comparison
 
 ```4d
-// WRONG: = is comparison, NOT assignment
-If ($name = Request("Enter name"))  // This compares, doesn't assign!
+// WRONG: = is comparison, returns True/False
+$name = Request("Enter name")        // Compares, doesn't assign!
+If ($input = Request("Name"))        // WRONG: compares, doesn't assign
 
-// CORRECT::=is assignment
-$name:=Request("Enter name")
-If ($name # "")  // Then compare
+// CORRECT: := is assignment
+$name:=Request("Enter name")        // Assigns
+$input:=Request("Name")
+If ($input # "")                     // Then compare separately
 ```
 
-**Rule:** `:=` assigns, `=` compares. Never mix them up.
+**Rule**: `:=` assigns. `=` compares. Never mix them.
 
-### 2. Indexing Differences
-
-```4d
-// Strings and Arrays: 1-based
-$firstChar:=$text[[1]]       // First character
-$array{1}:="First"           // First array element
-
-// Collections: 0-based
-$collection[0]:="First"      // First element
-```
-
-**Rule:** Remember which type you're working with to avoid off-by-one errors.
-
-### 3. Null Query Pattern
+### 2. Object Properties Are Case-Sensitive
 
 ```4d
-// WRONG: Cannot use placeholders with null
-$result:=ds.Users.query("email = :1"; Null)  // Doesn't work!
-
-// CORRECT: Direct null syntax
-$result:=ds.Users.query("email = null")
-```
-
-**Rule:** Always use literal `null` in query strings, never as a placeholder value.
-
----
-
-## Quick Decision Guide
-
-### By Task Type
-
-**Syntax errors or operators?**
-→ Read [language-syntax.md](references/language-syntax.md)
-- Assignment vs comparison, multi-line statements, operators, control flow
-
-**Database queries?**
-→ Start with [query-basics.md](references/query-basics.md)
-→ For many-to-many or formulas: [query-advanced.md](references/query-advanced.md)
-
-**Data types or conversions?**
-→ Read [data-types.md](references/data-types.md)
-- Text, Integer, Real, Boolean, Date, Time, Collections, Objects, type conversion
-
-**Building new features with ORDA/classes?**
-→ Read [modern-development.md](references/modern-development.md)
-- Entity classes, DataClass methods, ORDA patterns, shared objects, modern architecture
-
-**Maintaining legacy code?**
-→ Read [classic-patterns.md](references/classic-patterns.md)
-- Arrays, process variables, interprocess variables, classic methods, migration paths
-
-**Error handling?**
-→ Read [error-handling.md](references/error-handling.md)
-- Try/Catch (modern), ON ERR CALL (legacy), error logging, validation patterns
-
-**Working with forms?**
-→ Read [form-development.md](references/form-development.md)
-- Form structure, events, objects, JSON definitions, best practices
-
-**Using 4D 19.2 LTS?**
-→ ⚠️ **READ [version-19.2.md](references/version-19.2.md) FIRST!**
-Many modern features (return, break, {}, [], ?:, Try/Catch, +=) are NOT available in 19.2
-
-### By Symptom/Error
-
-**"Cannot use = to assign"** → [language-syntax.md](references/language-syntax.md)
-
-**"Query returns wrong results"** → [query-basics.md](references/query-basics.md)
-
-**"Type conversion error" or "String(42) doesn't work"** → [data-types.md](references/data-types.md)
-
-**"How do I use entity classes?"** → [modern-development.md](references/modern-development.md)
-
-**"Process variables not working"** → [classic-patterns.md](references/classic-patterns.md)
-
-**"Need to handle errors"** → [error-handling.md](references/error-handling.md)
-
-**"Form events not firing"** → [form-development.md](references/form-development.md)
-
-**"Syntax error: unexpected token 'return'"** → [version-19.2.md](references/version-19.2.md)
-
----
-
-## Top 5 Gotchas
-
-### 1. Assignment Operator Confusion
-
-```4d
-// MOST COMMON MISTAKE
-$value = 10                    // This compares, returns True/False
-$value:=10                   // This assigns
-
-// Another common pattern
-If ($input = Request("Name"))  // WRONG: compares, doesn't assign
-$input:=Request("Name")      // CORRECT: assign first
-If ($input # "")               // Then compare
-```
-
-### 2. Object Property Case Sensitivity
-
-```4d
-// Variables are case-INSENSITIVE
+// Variables: case-INSENSITIVE
 $MyVar:="test"
 $myvar:="changed"            // Same variable!
 
-// Object properties are case-SENSITIVE
-$obj.Name:="John"            // Different from $obj.name
-$obj.name:="Jane"            // These are different properties!
+// Object properties: case-SENSITIVE
+$obj.Name:="John"
+$obj.name:="Jane"            // Different properties!
 ```
 
 ### 3. Collection vs Array Indexing
 
 ```4d
-// Arrays: 1-based with special element zero
-ARRAY TEXT($array; 5)
-$array{0}:="Init"            // Special element zero
-$array{1}:="First"           // First actual element
+// Collections: 0-based
+$col:=New collection("A"; "B"; "C")
+$first:=$col[0]              // "A"
 
-// Collections: 0-based (like most languages)
-$collection:=New collection("First"; "Second")
-$first:=$collection[0]       // First element
+// Arrays: 1-based with special element zero
+ARRAY TEXT($arr; 3)
+$arr{1}:="A"                 // First element
+$arr{0}:="default"           // Special element zero
 ```
 
-### 4. Null Queries Require Special Syntax
+### 4. Null Queries Require Literal Syntax
 
 ```4d
-// WRONG: Null cannot be a placeholder value
-$orphans:=ds.Projects.query("clientId = :1"; Null)
+// WRONG: Null as placeholder doesn't work
+$result:=ds.Users.query("email = :1"; Null)
 
-// CORRECT: Use literal null in query string
-$orphans:=ds.Projects.query("clientId = null")
-
-// CORRECT: Check for not null
-$assigned:=ds.Projects.query("clientId != null")
+// CORRECT: literal null in query string
+$result:=ds.Users.query("email = null")
+$active:=ds.Users.query("email != null")
 ```
 
 ### 5. Linked Collection Queries
 
 ```4d
-// WRONG: Conditions can match different collection elements
-$users:=ds.Users.query("projects[].status = 'active' AND projects[].budget > 1000")
-// This might match: user has ONE active project AND ONE high-budget project (different projects)
+// WRONG: conditions can match DIFFERENT collection elements
+ds.Users.query("projects[].status = 'active' AND projects[].budget > 1000")
 
-// CORRECT: Link conditions to SAME collection element
-$users:=ds.Users.query("projects[a].status = 'active' AND projects[a].budget > 1000")
-// This matches: user has projects that are BOTH active AND high-budget
+// CORRECT: [a] links conditions to the SAME element
+ds.Users.query("projects[a].status = 'active' AND projects[a].budget > 1000")
+```
+
+### 6. Numeric Object Properties Are Always Real
+
+```4d
+$obj:=New object("count"; 5)
+Value type($obj.count)  // Returns Is real, NEVER Is longint
+```
+
+### 7. Decimal Separator Is Always Period
+
+```4d
+$price:=19.99    // CORRECT — always period
+$price:=19,99    // WRONG — two separate numbers!
+```
+
+### 8. 4D has a strict left-to-right precedence
+
+```4d
+if ($length > 1+$i) // Runtime error: $length>1 -> true -> true+$i -> error
+if ($length > (1+$i)) // No error
+
+$result:=3+4*5 // 35
+$result:=3+(4*5) // 23
 ```
 
 ---
 
-## Finding Information Quickly
+## Quick Decision Router
 
-### Documentation Sources
+### By Task
 
-**Official Documentation** (most authoritative)
-- Main docs: https://developer.4d.com/docs/
-- Use WebFetch to get specific pages when needed
-- Navigate by language features, ORDA, commands, etc.
+| Task | Read First | Then If Needed |
+|------|-----------|----------------|
+| Syntax errors, operators | [language-syntax.md](references/language-syntax.md) | `docs/Concepts/operators.md` |
+| Data types, conversions | [data-types.md](references/data-types.md) | `docs/Concepts/data-types.md` |
+| ORDA, entity classes | [orda-modern.md](references/orda-modern.md) | `docs/ORDA/ordaClasses.md` |
+| Database queries | [query-patterns.md](references/query-patterns.md) | `docs/API/DataClassClass.md` |
+| Error handling | [error-handling.md](references/error-handling.md) | `docs/Concepts/error-handling.md` |
+| Legacy/classic code | [classic-patterns.md](references/classic-patterns.md) | `docs/Concepts/arrays.md` |
+| Forms, events, UI | [forms-and-ui.md](references/forms-and-ui.md) | [events-index.md](references/events-index.md) |
+| Web server, REST API | [web-and-rest.md](references/web-and-rest.md) | [rest-index.md](references/rest-index.md) |
+| Specific class API | [api-index.md](references/api-index.md) | `docs/API/{ClassName}Class.md` |
+| Specific command | [commands-index.md](references/commands-index.md) | `docs/commands/{name}.md` |
+| Legacy command | [legacy-commands-index.md](references/legacy-commands-index.md) | `docs/commands-legacy/{name}.md` |
 
-**Community Forum** (real-world solutions)
-- https://discuss.4d.com/
-- Search for error messages, specific issues
-- Check for recent posts (4D evolves quickly)
+### By Error / Symptom
 
-**Blog** (feature deep-dives)
-- https://blog.4d.com/
-- Search: https://blog.4d.com/?s=your+search+terms
-- Great for understanding WHY features work the way they do
-
-**GitHub Depot** (code examples)
-- https://github.com/4d-depot
-- HDI (How Do I) repositories with working examples
-- Real-world code you can study and adapt
-
-**For complete search strategies and navigation tips:**
-→ See [documentation-guide.md](references/documentation-guide.md)
-
-### When to Search vs Read References
-
-**Search official docs when:**
-- You need a specific command reference
-- You want the authoritative explanation
-- You're exploring new features
-
-**Read reference files when:**
-- You need quick syntax reminders
-- You want to understand patterns and gotchas
-- You need examples of common operations
-
-**Search the forum when:**
-- Documentation is unclear
-- You hit an edge case
-- You want real-world solutions
-
-**Check GitHub depot when:**
-- You learn best from code examples
-- You need a working implementation
-- You want to see best practices in action
+| Error or Symptom | Read |
+|-----------------|------|
+| "Type mismatch" or wrong type | [data-types.md](references/data-types.md) |
+| "Cannot use = to assign" / silent assignment bug | [language-syntax.md](references/language-syntax.md) |
+| Query returns wrong results | [query-patterns.md](references/query-patterns.md) |
+| "Null query" not working | [manual-insights.md](references/manual-insights.md) |
+| Entity/EntitySelection methods | [orda-modern.md](references/orda-modern.md) then [api-index.md](references/api-index.md) |
+| Form events not firing | [forms-and-ui.md](references/forms-and-ui.md) then [events-index.md](references/events-index.md) |
+| Process variables not working | [classic-patterns.md](references/classic-patterns.md) |
+| REST endpoint 404 or auth error | [web-and-rest.md](references/web-and-rest.md) |
+| Transaction or save error | [error-handling.md](references/error-handling.md) |
+| `local` keyword confusion | [manual-insights.md](references/manual-insights.md) |
+| Need to find a specific 4D command | [commands-index.md](references/commands-index.md) |
+| Need to find a legacy command | [legacy-commands-index.md](references/legacy-commands-index.md) |
 
 ---
 
-## Reference File Guide
+## Docs Navigator
 
-### Priority 1: Language Fundamentals
+The `docs/` folder contains the **full official 4D v21 documentation** (3,387 files, 48MB). Use this section to find the right file.
 
-**[language-syntax.md](references/language-syntax.md)**
-- Assignment vs comparison (`:=` vs `=`)
-- Multi-line statements with `\`
-- Operators and control flow
-- String operations unique to 4D
-- Case statements and loops
-- Critical syntax mistakes to avoid
+### Category Quick Lookup
 
-**[data-types.md](references/data-types.md)**
-- Text, Integer, Real, Boolean, Date, Time
-- Collections (0-based) vs Arrays (1-based)
-- Objects and property access
-- Type conversion and validation
-- Null and undefined handling
-- Type-specific gotchas
+| Need | Directory | File Pattern | Example Path |
+|------|-----------|-------------|--------------|
+| Class API reference | `docs/API/` | `{Class}Class.md` | `docs/API/CollectionClass.md` |
+| ORDA concepts | `docs/ORDA/` | `{topic}.md` | `docs/ORDA/entities.md` |
+| Modern commands | `docs/commands/` | `{command-name}.md` | `docs/commands/dialog.md` |
+| Commands by theme | `docs/commands/theme/` | `{Theme}.md` | `docs/commands/theme/JSON.md` |
+| Language concepts | `docs/Concepts/` | `{topic}.md` | `docs/Concepts/classes.md` |
+| REST endpoints | `docs/REST/` | `${endpoint}.md` | `docs/REST/$filter.md` |
+| Form events | `docs/Events/` | `on{Event}.md` | `docs/Events/onClicked.md` |
+| Form objects | `docs/FormObjects/` | `{type}_overview.md` | `docs/FormObjects/listbox_overview.md` |
+| Web server | `docs/WebServer/` | `{topic}.md` | `docs/WebServer/sessions.md` |
+| Legacy commands | `docs/commands-legacy/` | `{command-name}.md` | `docs/commands-legacy/alert.md` |
+| Settings | `docs/settings/` | `{topic}.md` | `docs/settings/web.md` |
+| Project structure | `docs/Project/` | `{topic}.md` | `docs/Project/architecture.md` |
+| AI Kit | `docs/aikit/` | various | `docs/aikit/` |
+| ViewPro | `docs/ViewPro/` | various | `docs/ViewPro/` |
+| WritePro | `docs/WritePro/` | various | `docs/WritePro/` |
 
-### Priority 2: Database and Development Patterns
+### Search Patterns
 
-**[query-basics.md](references/query-basics.md)**
-- Simple queries with placeholders
-- Comparison operators (=, !=, >, <, IN)
-- Null value queries
-- Simple relations (many-to-one)
-- Collection queries
-- Basic ordering and filtering
+When you need to find something specific across `docs/`:
 
-**[query-advanced.md](references/query-advanced.md)**
-- Linked collection queries with `[a]` syntax
-- Many-to-many relations with `{2}` class index
-- Formula queries
-- Named placeholders
-- Query optimization and performance
-- Complex patterns and edge cases
+```bash
+# Find a command by name
+grep -rl "title: CommandName" docs/commands/ docs/commands-legacy/
 
-**[modern-development.md](references/modern-development.md)**
-- Entity classes and ORDA patterns
-- DataClass factory methods
-- EntitySelection operations
-- Shared objects and Storage
-- Modern error handling with Try/Catch
-- Thin API layer architecture
+# Find a class method
+grep -rl "\.methodName" docs/API/
 
-**[classic-patterns.md](references/classic-patterns.md)**
-- Arrays and legacy collections
-- Process and interprocess variables
-- Classic method patterns
-- ON ERR CALL error handling
-- Migration strategies from classic to modern
-- When to keep legacy patterns
+# Find usage of a specific function
+grep -rl "functionName" docs/ --include="*.md"
 
-### Priority 3: Specialized Topics
+# Find a form event
+ls docs/Events/on*.md
 
-**[error-handling.md](references/error-handling.md)**
-- Modern Try/Catch patterns
-- Legacy ON ERR CALL approach
-- Transaction error handling
-- Network and file operation errors
-- Error logging and debugging
-- Circuit breaker patterns
+# Find a form object type
+ls docs/FormObjects/*_overview.md
 
-**[form-development.md](references/form-development.md)**
-- Form structure and pages
-- JSON form definitions
-- Form objects (input, buttons, lists)
-- Form and object events
-- Best practices for forms
-- Responsive design
+# Find a REST endpoint
+ls docs/REST/\$*.md
 
-**[version-19.2.md](references/version-19.2.md)**
-- ⚠️ Critical for 4D 19.2 LTS projects
-- Features NOT available in 19.2
-- Working around missing features
-- Quick reference compatibility table
-- Guide for adding project-specific conventions
+# Find settings for a topic
+grep -rl "keyword" docs/settings/
 
-**[version-compatibility.md](references/version-compatibility.md)**
-- Project version tracking with .4d-metadata.json
-- Version checking and warnings
-- Changelog integration for code review
-- Feedback collection on version issues
-- Helper scripts for version management
+# Find a legacy command by theme
+grep -rl "CommandName" docs/commands/theme/
+```
 
-**[documentation-guide.md](references/documentation-guide.md)**
-- How to navigate developer.4d.com
-- Forum search strategies
-- Blog search patterns
-- GitHub depot navigation
-- When to use WebFetch for live docs
-- Finding examples and solutions
+### Index Files
 
+For structured navigation of large categories, read these generated indexes:
 
-**[review.md](references/review.md)**
-- User feedback from previous code review
-- High priority!!!
+| Index | Content | Files Indexed |
+|-------|---------|---------------|
+| [api-index.md](references/api-index.md) | All API classes with key methods | 42 |
+| [commands-index.md](references/commands-index.md) | Modern commands + theme categories | 65 + 76 |
+| [concepts-index.md](references/concepts-index.md) | Language concept files | 29 |
+| [orda-index.md](references/orda-index.md) | ORDA documentation structure | 10 |
+| [rest-index.md](references/rest-index.md) | REST API endpoints | 36 |
+| [events-index.md](references/events-index.md) | Form and system events | 61 |
+| [form-objects-index.md](references/form-objects-index.md) | Form object types | 54 |
+| [webserver-index.md](references/webserver-index.md) | Web server documentation | 14 |
+| [legacy-commands-index.md](references/legacy-commands-index.md) | Legacy commands by theme | 1,211 |
+| [all-categories-index.md](references/all-categories-index.md) | Master navigation | 32 categories |
 
 ---
 
-## Common Workflow Patterns
+## Reference Files Guide
 
-### New Feature Development
-1. Read [modern-development.md](references/modern-development.md) for architecture
-2. Use [query-basics.md](references/query-basics.md) for database operations
-3. Reference [language-syntax.md](references/language-syntax.md) for syntax questions
-4. Apply [error-handling.md](references/error-handling.md) for robust error management
+### Curated Knowledge (hand-written, with code examples)
 
-### Legacy Code Maintenance
-1. Start with [classic-patterns.md](references/classic-patterns.md)
-2. Use [modern-development.md](references/modern-development.md) for gradual modernization
-3. Check [version-19.2.md](references/version-19.2.md) if project is on 19.2 LTS
+| File | Covers | Priority |
+|------|--------|----------|
+| [language-syntax.md](references/language-syntax.md) | Assignment, operators, control flow, methods, classes, strings, formulas | High — read for any syntax question |
+| [data-types.md](references/data-types.md) | All types, conversions, null/undefined, collections, objects, pointers | High — read for type errors |
+| [orda-modern.md](references/orda-modern.md) | ORDA architecture, entity classes, computed attributes, shared objects, signals | High — read for new feature development |
+| [query-patterns.md](references/query-patterns.md) | Query syntax, placeholders, null queries, linked collections, formulas, performance | High — read for any query work |
+| [error-handling.md](references/error-handling.md) | Try/Catch, ON ERR CALL, transactions, Throw, logging | Medium — read when handling errors |
+| [classic-patterns.md](references/classic-patterns.md) | Arrays, process variables, pointers, sets, migration strategies | Medium — read for legacy code |
+| [forms-and-ui.md](references/forms-and-ui.md) | Forms, events, form objects, list boxes, subforms, form classes | Medium — read for UI work |
+| [web-and-rest.md](references/web-and-rest.md) | Web server, REST API, HTTP handlers, sessions, authentication | Medium — read for web/REST work |
+| [manual-insights.md](references/manual-insights.md) | Real-world corrections from code reviews — overrides other sources | **Always check** for edge cases |
 
-### Debugging Issues
-1. **Syntax errors:** [language-syntax.md](references/language-syntax.md)
-2. **Type errors:** [data-types.md](references/data-types.md)
-3. **Query issues:** [query-basics.md](references/query-basics.md) or [query-advanced.md](references/query-advanced.md)
-4. **Runtime errors:** [error-handling.md](references/error-handling.md)
-5. **Check documentation:** [documentation-guide.md](references/documentation-guide.md)
+### Common Workflows
 
-### Quick Syntax Lookup
-1. Check this SKILL.md for common gotchas (above)
-2. Read the relevant reference file for details
-3. Search official docs if reference doesn't cover your case
-4. Check forum for real-world solutions
+**New Feature Development:**
+1. [orda-modern.md](references/orda-modern.md) for architecture patterns
+2. [query-patterns.md](references/query-patterns.md) for database operations
+3. [error-handling.md](references/error-handling.md) for robust error management
+4. Specific `docs/API/` files for class method details
 
----
+**Legacy Code Maintenance:**
+1. [classic-patterns.md](references/classic-patterns.md) for understanding legacy code
+2. [orda-modern.md](references/orda-modern.md) for modernization options
+3. [language-syntax.md](references/language-syntax.md) for syntax questions
 
-## Version Notes
+**Debugging:**
+1. Check [Critical Syntax Rules](#critical-syntax-rules) above first
+2. [language-syntax.md](references/language-syntax.md) for syntax errors
+3. [data-types.md](references/data-types.md) for type errors
+4. [query-patterns.md](references/query-patterns.md) for query issues
+5. [manual-insights.md](references/manual-insights.md) for known gotchas
 
-**4D 19.2 LTS Users:** Many modern features are not available in 19.2. Read [version-19.2.md](references/version-19.2.md) before writing any code to avoid using unavailable features like:
-- `return`, `break`, `continue` keywords
-- Object/collection literals `{}` and `[]`
-- Ternary operator `? :`
-- Short-circuit operators `&&` and `||`
-- Compound assignment `+=`, `-=`
-- Try/Catch blocks
-
-**Current 4D Users:** This skill covers both modern and legacy patterns. Use modern patterns for new development, keep legacy patterns when maintaining existing code.
-
----
-
-## Best Practices Summary
-
-1. **Use `:=` for assignment, `=` for comparison** (never mix them)
-2. **Remember indexing:** 1-based for strings/arrays, 0-based for collections
-3. **Use literal `null` in queries** (not as placeholder value)
-4. **Link collection queries** with `[a]` syntax when conditions must match same element
-5. **Check property case sensitivity** (object properties are case-sensitive)
-6. **Prefer modern patterns** for new development (ORDA, classes, Try/Catch)
-7. **Keep legacy patterns** for stable, working code
-8. **Test thoroughly** when mixing modern and classic approaches
-9. **Use progressive disclosure** - start with this guide, read references as needed
-10. **Search documentation** when references don't cover your specific case
+**Web/REST Development:**
+1. [web-and-rest.md](references/web-and-rest.md) for server and REST patterns
+2. [orda-modern.md](references/orda-modern.md) for exposed functions
+3. [rest-index.md](references/rest-index.md) for specific endpoint docs
 
 ---
 
-Ready to dive deep? Start with the Quick Decision Guide above to find the right reference file for your task.
+## External Resources
+
+When the embedded docs don't cover your case:
+
+- **Official docs**: https://developer.4d.com/docs/
+- **Community forum**: https://discuss.4d.com/
+- **Blog** (feature deep-dives): https://blog.4d.com/
+- **GitHub depot** (code examples): https://github.com/4d-depot
