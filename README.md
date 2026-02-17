@@ -18,7 +18,13 @@ Transforms Claude into a 4D development expert:
 
 ## Installation
 
-**For Claude Code:**
+**Using [npx skills](https://github.com/vercel-labs/skills) (Recommended):**
+
+```bash
+npx skills add Ganbin/4d-development-skill
+```
+
+**Manual install:**
 
 ```bash
 git clone https://github.com/Ganbin/4d-development-skill.git
